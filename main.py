@@ -11,17 +11,29 @@ from pygame.locals import *
 
 pygame.init()
 
+# Some colors
+# Grayscale
 WHITE=(255,255,255)
-BLACK=(0,0,0)
+LIGHT_GRAY=(100,100,100)
+GRAY=(60,60,60)
 DARK_GRAY=(20,20,20)
+BLACK=(0,0,0)
+
+# Others
+BROWN=(139,69,19)
+GOLD=(255,215,0)
+
+# Name lists
+firsts=[]
+lasts=[]
 
 def p(s):
 	print s
 
 def init_names():
 	# set up names
+	p("Reading names into memory...")
 	first=open("first.txt","r")
-	firsts=[]
 	for line in first.readlines():
 		line=line.replace("\n","")
 		if line=="":
@@ -30,23 +42,24 @@ def init_names():
 	first.close()
 	
 	last=open("last.txt","r")
-	lasts=[]
 	for line in last.readlines():
 		line=line.replace("\n","")
 		if line=="":
 			continue
 		lasts.append(line)
 	last.close()
+	p("Names read into memory.")
 
 class dwarf(object):
-	def __init__(self):
+	def __init__(self,loc):
 		self.beard=0
 		# p(beard increasing +1) is between 1/10 and 2/10
 		self.beard_inc=(random.random()+1)/10.
 		self.name="%s %s"%(random.choice(firsts),random.choice(lasts))
-		self.location=(0,0)
-		# where to move to
-		self.target=None
+		# loc is an ordered pair (x,y,z)
+		self.location=loc
+		# initially should be idle
+		self.task=task(self,0)
 		# what to do after current action is done
 		self.goal=None
 		# an action is what is happening right now, and will always finish before the goal
@@ -56,12 +69,13 @@ class dwarf(object):
 		# maybe make this applied gaussian
 		self.thirst_inc=(random.random()+1)/500.
 	def __str__(self):
-		s=self.name
+		return "%s with beard length %i and is %s"%(self.name,self.beard,self.task)
 		
 	def beer(self):
 		self.thirst=0
 		if random.random()<self.beard_inc:
 			self.beard+=1
+
 	def update(self):
 		self.thirst+=self.thirst_inc
 
@@ -76,8 +90,9 @@ class dwarf(object):
 			
 
 class miner(dwarf):
-	def __init__(self):
-		return
+#	def __init__(self):
+#		return
+	pass
 
 class task(object):
 	"""
@@ -97,9 +112,42 @@ class task(object):
 		4:"Drink",
 		5:"Sleep"
 		}
-	def __init__(self,tid):
+	def __init__(self,dwarf,tid):
 		self.tid=tid
-		
+		self.dwarf=dwarf
+		self.name=self.tid_dict[tid]
+	def __str__(self):
+		if self.tid==0:
+			return "Idling"
+		else:
+			return "%sing"%self.name
+
+	def act(self):
+		if tid==0:
+			self.idle()
+		if tid==1:
+			self.move()
+		if tid==2:
+			self.dig()
+		if tid==3:
+			self.eat()
+		if tid==4:
+			self.drink()
+		if tid==5:
+			self.sleep()
+
+	def idle(self):
+		pass
+	def move(self):
+		pass
+	def dig(self):
+		pass
+	def eat(self):
+		pass
+	def drink(self):
+		pass
+	def sleep(self):
+		pass
 
 class objs(object):
 	"""
@@ -125,30 +173,47 @@ class objs(object):
 	def destroy(self):
 		self.__del__(self)
 
-class locations(object):
+class location(object):
 	"""
 	stuff in the earth
 	kinds:
-		empty:		can have stuff
-		soil:		soft earth
-		bedrock:	standard stone
+		0	empty:		can have stuff
+		1	soil:		soft earth
+		2	bedrock:	standard stone
 		metals -
-			silver
-			gold
-			iron
+		3	silver
+		4	gold
+		5	iron
+	properties are:
+		diff:	difficulty to dig (0 = nothing, 1 = easy, 10 = quite hard)
+		color
 			
 	"""
-	def __init__(self,kind):
-		self.kind=kind
+	lid_dict={
+		0:("Empty",0,BLACK),
+		1:("Soil",1,BROWN),
+		2:("Bedrock",6,DARK_GRAY),
+		3:("Silver",4,LIGHT_GRAY),
+		4:("Gold",3,GOLD),
+		5:("Iron",8,GRAY)
+		}
+	def __init__(self,lid):
 		self.objs=[]
-		if self.kind=="soil":
-			self.diff=1
+		self.lid=lid
+		self.name=self.lid_dict[lid][0]
+		self.diff=self.lid_dict[lid][1]
+		self.color=self.lid_dict[lid][2]
 			
 
 class earth(object):
 	def __init__(self,size):
-		self.earth=np.empty(size,dtype=locations)
-		self.earth
+		p("Creating world...")
+		self.earth=np.empty(size,dtype=location)
+		for x in range(size[0]):
+			for y in range(size[1]):
+				for z in range(size[2]):
+					self.earth[x][y][z]=location(0)
+		p("World created.")
 
 class World(object):
 	def __init__(self):
@@ -184,7 +249,7 @@ class World(object):
 		pygame.display.update()
 		self.clock.tick(self.framerate)
 		
-		self.earth=earth((500,500,50))
+		self.earth=earth((50,50,5))
 
 		self.run()
 
@@ -232,11 +297,20 @@ class World(object):
 			tRect.centery=self.screen.get_rect().centery
 		self.screen.blit(t,tRect)
 
-	def buy_dwarf(self):
+	def buy_miner(self,loc):
+		"""
+		todo:	where does miner go?
+				take out funds
+		"""
 		p("Buying a dwarf...")
-		self.dwarf_list.append(dwarf())
-		p(self.dwarf_list[-1])
-		pass
+		self.dwarf_list.append(miner(loc))
+		p("Bought dwarf %s"%self.dwarf_list[-1])
+
+	def draw(self):
+		"""
+		todo:	draw all the stuff
+		"""
+		self.screen.fill(BLACK)
 
 	def run(self):
 		while True:
@@ -248,11 +322,11 @@ class World(object):
 					if event.key==ord('h'):
 						self.help()
 					if event.key==ord('m'):
-						self.buy_dwarf()
+						self.buy_miner((0,0,0))
 				if event.type==pygame.QUIT:
 					pygame.quit()
 					sys.exit()
-
+			self.draw()
 			pygame.display.update()
 			self.clock.tick(self.framerate)
 
