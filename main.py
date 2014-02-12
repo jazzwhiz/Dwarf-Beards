@@ -5,11 +5,11 @@ v 0.01
 """
 #!/usr/bin/python
 
-import pygame,sys,time,random
-import numpy as np
+import pygame
 import world
-from pygame.locals import *
 
-pygame.init()
+print __name__
 
-w=world.World()
+if __name__=="__main__":
+	pygame.init()
+	world.World()

@@ -5,13 +5,20 @@ v 0.01
 """
 #!/usr/bin/python
 
-import pygame,sys,time,random
+import pygame,sys,random
 import numpy as np
 from pygame.locals import *
 
+# initialize rng
 seed=1888
 rng=random.Random()
 rng.seed(seed)
+
+# Names
+firsts=[]
+lasts=[]
+
+import dwarves,tasks
 
 # Some colors
 # Grayscale
@@ -27,6 +34,24 @@ GOLD=(255,215,0)
 
 def p(s):
 	print s
+
+def init_names():
+	# set up names
+	first=open("first.txt","r")
+	for line in first.readlines():
+		line=line.replace("\n","")
+		if line=="":
+			continue
+		firsts.append(line)
+	first.close()
+	
+	last=open("last.txt","r")
+	for line in last.readlines():
+		line=line.replace("\n","")
+		if line=="":
+			continue
+		lasts.append(line)
+	last.close()
 
 class objs(object):
 	"""
@@ -90,7 +115,6 @@ class location(object):
 
 class earth(object):
 	def __init__(self,size):
-		p("Creating world...")
 		self.size=size
 		self.earth=np.empty(self.size,dtype=location)
 		for x in range(self.size[0]):
@@ -101,7 +125,6 @@ class earth(object):
 				# put bedrock everywhere else
 				for z in range(1,self.size[2]):
 					self.earth[x][y][z]=location(1)
-		p("World created.")
 	def seed_materials(self,num,lid):
 		"""
 		num:	how many locs should have the material
@@ -123,8 +146,6 @@ class World(object):
 		self.bg_color=BLACK
 		self.screen.fill(self.bg_color)
 		self.dwarf_list=[]
-
-		init_names()
 
 		self.text("Dwarf Beards",90,WHITE,location=(0,200),centerx=True)
 		self.text("created by",20,WHITE,location=(0,350),centerx=True)
@@ -148,7 +169,13 @@ class World(object):
 		pygame.display.update()
 		self.clock.tick(self.framerate)
 		
+		p("Reading names into memory...")
+		init_names()
+		p("Names read into memory.")
+
+		p("Creating world...")
 		self.earth=earth((50,50,5))
+		p("World created.")
 
 		self.run()
 
@@ -202,7 +229,7 @@ class World(object):
 				take out funds
 		"""
 		p("Buying a dwarf...")
-		self.dwarf_list.append(miner(loc))
+		self.dwarf_list.append(dwarves.miner(loc))
 		p("Bought dwarf %s"%self.dwarf_list[-1])
 
 	def draw(self):

@@ -3,28 +3,8 @@
 """
 #!/usr/bin/python
 
-import pygame,sys,time,random
-import numpy as np
-
-def init_names():
-	# set up names
-	p("Reading names into memory...")
-	first=open("first.txt","r")
-	for line in first.readlines():
-		line=line.replace("\n","")
-		if line=="":
-			continue
-		firsts.append(line)
-	first.close()
-	
-	last=open("last.txt","r")
-	for line in last.readlines():
-		line=line.replace("\n","")
-		if line=="":
-			continue
-		lasts.append(line)
-	last.close()
-	p("Names read into memory.")
+from world import rng,firsts,lasts
+import tasks
 
 class dwarf(object):
 	def __init__(self,loc):
@@ -35,7 +15,7 @@ class dwarf(object):
 		# loc is an ordered pair (x,y,z)
 		self.location=loc
 		# initially should be idle
-		self.task=task(self,0)
+		self.task=tasks.task(self,0)
 		# what to do after current action is done
 		self.goal=None
 		# an action is what is happening right now, and will always finish before the goal

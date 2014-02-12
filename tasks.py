@@ -3,10 +3,6 @@
 """
 #!/usr/bin/python
 
-import sys,time,random
-import numpy as np
-
-
 class task(object):
 	"""
 	requires a task id which is also it's priority
