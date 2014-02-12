@@ -32,27 +32,6 @@ BLACK=(0,0,0)
 BROWN=(139,69,19)
 GOLD=(255,215,0)
 
-def p(s):
-	print s
-
-def init_names():
-	# set up names
-	first=open("first.txt","r")
-	for line in first.readlines():
-		line=line.replace("\n","")
-		if line=="":
-			continue
-		firsts.append(line)
-	first.close()
-	
-	last=open("last.txt","r")
-	for line in last.readlines():
-		line=line.replace("\n","")
-		if line=="":
-			continue
-		lasts.append(line)
-	last.close()
-
 class objs(object):
 	"""
 	things that are at locations
@@ -169,15 +148,37 @@ class World(object):
 		pygame.display.update()
 		self.clock.tick(self.framerate)
 		
-		p("Reading names into memory...")
-		init_names()
-		p("Names read into memory.")
+		self.p("Reading names into memory...")
+		self.init_names()
+		self.p("Names read into memory.")
 
-		p("Creating world...")
+		self.p("Creating world...")
 		self.earth=earth((50,50,5))
-		p("World created.")
+		self.p("World created.")
 
 		self.run()
+
+
+	def p(self,s):
+		print s
+
+	def init_names(self,):
+		# set up names
+		first=open("first.txt","r")
+		for line in first.readlines():
+			line=line.replace("\n","")
+			if line=="":
+				continue
+			firsts.append(line)
+		first.close()
+		
+		last=open("last.txt","r")
+		for line in last.readlines():
+			line=line.replace("\n","")
+			if line=="":
+				continue
+			lasts.append(line)
+		last.close()
 
 	def help(self):
 		self.screen.fill(BLACK)
@@ -228,9 +229,9 @@ class World(object):
 		todo:	where does miner go?
 				take out funds
 		"""
-		p("Buying a dwarf...")
+		self.p("Buying a dwarf...")
 		self.dwarf_list.append(dwarves.miner(loc))
-		p("Bought dwarf %s"%self.dwarf_list[-1])
+		self.p("Bought dwarf %s"%self.dwarf_list[-1])
 
 	def draw(self):
 		"""
