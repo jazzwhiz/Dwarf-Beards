@@ -116,7 +116,7 @@ class earth(object):
 					self.earth[x][y][z]=location(1)
 		for lid in range(2,5):
 			for num_veins in range(rng.randint(2,6)):
-				self.seed_materials(rng.randint(25,100),lid)
+				self.seed_materials(rng.randint(25,150),lid)
 	def seed_materials(self,num,lid):
 		"""
 		num:	how many locs should have the material
@@ -132,7 +132,7 @@ class earth(object):
 		diffs=[(1,0,0),(-1,0,0),(0,1,0),(0,-1,0),(0,0,1),(0,0,-1)]
 		while len(metal_locs)<num:
 			focus=rng.choice(metal_locs)
-			tmp_diffs=rng.sample(diffs,3)
+			tmp_diffs=rng.sample(diffs,rng.randint(1,6))
 			tmp_locs=[tuple(sum(x) for x in zip(focus,diff)) for diff in tmp_diffs]
 			for tmp_loc in tmp_locs:
 				if tmp_loc[0]>=0 and tmp_loc[0]<self.size[0]:
@@ -154,8 +154,8 @@ class World(object):
 		self.bg_color=BLACK
 		self.screen.fill(self.bg_color)
 		self.dwarf_list=[]
-		# initial level (0 = top)
-		self.level=0
+
+		pygame.key.set_repeat(200,50)
 
 		self.text("Dwarf Beards",90,WHITE,location=(0,200),centerx=True)
 		self.text("created by",20,WHITE,location=(0,350),centerx=True)
@@ -187,6 +187,11 @@ class World(object):
 		self.p("Creating world...")
 		self.earth_size=(50,50,11)
 		self.earth=earth(self.earth_size)
+
+		# initial level (0 = top, 10... is bottom)
+		self.level=0
+		# focus
+		self.focus=(self.earth_size[0]/2,self.earth_size[1]/2)
 		self.p("World created.")
 
 		self.run()
@@ -277,11 +282,24 @@ class World(object):
 		todo:	draw all the stuff
 		"""
 		self.screen.fill(BLACK)
+		
+		# draw the earth
 		for x in range(self.earth_size[0]):
 			for y in range(self.earth_size[1]):
 				pygame.draw.rect(self.screen,self.earth.earth[x][y][self.level].color,(12*x+1,12*y+1,10,10),0)
+
+		# draw the focus box
+		focus_corners=[
+			(12*self.focus[0],12*self.focus[1]),
+			(12*(self.focus[0]+1),12*self.focus[1]),
+			(12*(self.focus[0]+1),12*(self.focus[1]+1)),
+			(12*self.focus[0],12*(self.focus[1]+1))
+			]
+		for i in range(4):
+			pygame.draw.line(self.screen,WHITE,focus_corners[i],focus_corners[(i+1)%4],2)
+
 		# now we draw RHS of stuff
-		self.text("z = %i"%(-self.level),12,RED,(610,5))
+		self.text("z = %i"%(-self.level),14,RED,(610,5))
 
 	def run(self):
 		while True:
@@ -292,14 +310,28 @@ class World(object):
 						pygame.event.post(pygame.event.Event(QUIT))
 					if event.key==ord('h'):
 						self.help()
+
 					if event.key==ord('m'):
 						self.buy_miner((0,0,0))
+
+					# move focus in the z direction
 					if event.key==ord(',') and KMOD_SHIFT:
 #						self.p("Moving out of the earth one level")
 						self.level=max(self.level-1,0)
 					if event.key==ord('.') and KMOD_SHIFT:
 #						self.p("Moving into the earth one level")
 						self.level=min(self.level+1,self.earth_size[2]-1)
+
+					# move focus in the plane, modularly (I'm not a monster)
+					if event.key==K_UP:
+						self.focus=(self.focus[0],(self.focus[1]-1)%self.earth_size[1])
+					if event.key==K_DOWN:
+						self.focus=(self.focus[0],(self.focus[1]+1)%self.earth_size[1])
+					if event.key==K_LEFT:
+						self.focus=((self.focus[0]-1)%self.earth_size[0],self.focus[1])
+					if event.key==K_RIGHT:
+						self.focus=((self.focus[0]+1)%self.earth_size[0],self.focus[1])
+
 				if event.type==pygame.QUIT:
 					pygame.quit()
 					sys.exit()
