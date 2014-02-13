@@ -32,6 +32,7 @@ BLACK=(0,0,0)
 BROWN=(139,69,19)
 GOLD=(255,215,0)
 RED=(255,0,0)
+DARK_BLUE=(0,0,100)
 
 class objs(object):
 	"""
@@ -154,6 +155,8 @@ class World(object):
 		self.bg_color=BLACK
 		self.screen.fill(self.bg_color)
 		self.dwarf_list=[]
+		self.job_queue=[]
+		self.notifications=[]
 
 		pygame.key.set_repeat(200,50)
 
@@ -192,6 +195,7 @@ class World(object):
 		self.level=0
 		# focus
 		self.focus=(self.earth_size[0]/2,self.earth_size[1]/2)
+		self.focus_loc=self.earth.earth[self.focus[0]][self.focus[1]][self.level]
 		self.p("World created.")
 
 		self.run()
@@ -199,6 +203,14 @@ class World(object):
 
 	def p(self,s):
 		print s
+
+	def notify(self,s):
+		"""
+		todo:
+		make this work
+		"""
+		self.notifications.append(s)
+		self.p(s)
 
 	def init_names(self,):
 		# set up names
@@ -229,8 +241,8 @@ class World(object):
 		self.text("h",20,WHITE,(20,y))
 		self.text("- Toggle this help screen",20,WHITE,(60,y))
 		y+=20
-		self.text("m",20,WHITE,(20,y))
-		self.text("- Buy a miner",20,WHITE,(60,y))
+		self.text("n",20,WHITE,(20,y))
+		self.text("- Buy a new dwarf",20,WHITE,(60,y))
 		y+=20
 		self.text("<",20,WHITE,(20,y))
 		self.text("- Up one z level",20,WHITE,(60,y))
@@ -268,13 +280,13 @@ class World(object):
 			tRect.centery=self.screen.get_rect().centery
 		self.screen.blit(t,tRect)
 
-	def buy_miner(self,loc):
+	def buy_dwarf(self,loc):
 		"""
 		todo:	where does miner go?
 				take out funds
 		"""
 		self.p("Buying a dwarf...")
-		self.dwarf_list.append(dwarves.miner(loc))
+		self.dwarf_list.append(dwarves.dwarf(self.earth,loc))
 		self.p("Bought dwarf %s"%self.dwarf_list[-1])
 
 	def draw(self):
@@ -288,6 +300,11 @@ class World(object):
 			for y in range(self.earth_size[1]):
 				pygame.draw.rect(self.screen,self.earth.earth[x][y][self.level].color,(12*x+1,12*y+1,10,10),0)
 
+		# draw the dwarves
+		for dwarf in self.dwarf_list:
+			if dwarf.loc[2]==self.level:
+				pygame.draw.circle(self.screen,BLACK,(12*dwarf.loc[0]+6,12*dwarf.loc[1]+6),5,0)
+
 		# draw the focus box
 		focus_corners=[
 			(12*self.focus[0],12*self.focus[1]),
@@ -299,21 +316,52 @@ class World(object):
 			pygame.draw.line(self.screen,WHITE,focus_corners[i],focus_corners[(i+1)%4],2)
 
 		# now we draw RHS of stuff
-		self.text("z = %i"%(-self.level),15,RED,(610,5))
-		self.text(self.earth.earth[self.focus[0]][self.focus[1]][self.level].name,15,RED,(650,5))
+		self.text("(%i,%i,%i)"%(self.focus[0],self.focus[1],-self.level),15,RED,(610,5))
+
+		if self.focus_loc.empty:
+			self.text("%s floor"%self.focus_loc.name,15,RED,(680,5))
+		else:
+			self.text(self.focus_loc.name,15,RED,(680,5))
+
+		y=25
+		for dwarf in self.dwarf_list:
+			if dwarf.loc==self.focus+(self.level,):
+				self.text("%s (%i)"%(dwarf.name,dwarf.beard),15,LIGHT_GRAY,(625,y))
+				y+=16
+		for obj in self.focus_loc.objs:
+			self.text(obj.name,15,DARK_BLUE,(625,y))
+			y+=16
+
+	def update(self):
+		self.focus_loc=self.earth.earth[self.focus[0]][self.focus[1]][self.level]
+		for dwarf in self.dwarf_list:
+			dwarf.update()
 
 	def run(self):
 		while True:
 			self.events=pygame.event.get()
 			for event in self.events:
 				if event.type==KEYDOWN:
+
+					# general game action
 					if event.key==K_ESCAPE:
 						pygame.event.post(pygame.event.Event(QUIT))
 					if event.key==ord('h'):
 						self.help()
 
-					if event.key==ord('m'):
-						self.buy_miner((0,0,0))
+					# dwarf action
+					if event.key==ord('n'):
+						if self.focus_loc.empty:
+							self.buy_dwarf(self.focus+(self.level,))
+						else:
+							self.notify("Cannot place dwarf here.")
+
+					# adding tasks
+					if event.key==ord('d'):
+						if self.focus_loc.empty:
+							self.notify("Nothing to dig out here.")
+						else:
+							self.task_queue.append(tasks.task())
 
 					# move focus in the z direction
 					if event.key==ord(',') and pygame.key.get_mods() in [1,2,3]:
@@ -339,6 +387,7 @@ class World(object):
 				if event.type==pygame.QUIT:
 					pygame.quit()
 					sys.exit()
+			self.update()
 			self.draw()
 			pygame.display.update()
 			self.clock.tick(self.framerate)

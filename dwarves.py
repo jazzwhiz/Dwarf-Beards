@@ -7,15 +7,17 @@ from world import rng,firsts,lasts
 import tasks
 
 class dwarf(object):
-	def __init__(self,loc):
+	def __init__(self,earth,loc):
+		self.earth=earth
 		self.beard=0
 		# p(beard increasing +1) is between 1/10 and 2/10
 		self.beard_inc=(rng.random()+1)/10.
 		self.name="%s %s"%(rng.choice(firsts),rng.choice(lasts))
 		# loc is an ordered pair (x,y,z)
-		self.location=loc
-		# initially should be idle
-		self.task=tasks.task(self,0)
+		self.loc=loc
+		# initially should be idle, idle_time is a measure of impatience
+		self.idle_time=rng.randint(40,200)
+		self.task=tasks.idle(self.earth,self.loc,self.idle_time)
 		# what to do after current action is done
 		self.goal=None
 		# an action is what is happening right now, and will always finish before the goal
@@ -33,6 +35,10 @@ class dwarf(object):
 			self.beard+=1
 
 	def update(self):
+		self.task.update(self.loc)
+
+		self.loc=tuple(sum(x) for x in zip(self.loc,self.task.move()))
+
 		self.thirst+=self.thirst_inc
 
 		# update goals
@@ -44,9 +50,4 @@ class dwarf(object):
 		if self.action==None and self.goal!=None:
 			self.action=self.goal
 			
-
-class miner(dwarf):
-#	def __init__(self):
-#		return
-	pass
 
