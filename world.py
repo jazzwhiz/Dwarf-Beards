@@ -31,19 +31,29 @@ BLACK=(0,0,0)
 # Others
 BROWN=(139,69,19)
 GOLD=(255,215,0)
+RED=(255,0,0)
 
 class objs(object):
 	"""
 	things that are at locations
-	axe:	digs in anything
-	shovel:	cheaper than axe, digs in soil only
-	cart:	hauls one half of one location away
-	ladder: allows for movement vertically
+	0:	axe:			digs in anything
+	1:	shovel:			cheaper than axe, digs in soil only
+	2:	cart:			hauls one half of one location away
+	3:	ladder:			allows for movement vertically
+	4:	trading post:	turn resources into moneys
 	"""
-	def __init__(self,kind):
-		self.kind=kind
+	oid_dict={
+		0:("Axe"),
+		1:("Shovel"),
+		2:("Cart"),
+		3:("Ladder"),
+		4:("Trading post")
+		}
+	def __init__(self,oid):
+		self.oid=oid
+		self.name=self.oid_dict[self.oid]
 		self.condition=1
-		if self.kind=="axe":
+		if self.oid==0:
 			# will last between 25 and 50 uses
 			self.condition_inc=(rng.random()+1)/50
 
@@ -104,6 +114,9 @@ class earth(object):
 				# put bedrock everywhere else
 				for z in range(1,self.size[2]):
 					self.earth[x][y][z]=location(1)
+		for lid in range(2,5):
+			for num_veins in range(rng.randint(2,6)):
+				self.seed_materials(rng.randint(25,100),lid)
 	def seed_materials(self,num,lid):
 		"""
 		num:	how many locs should have the material
@@ -112,9 +125,25 @@ class earth(object):
 		# assert location.lid_dict[lid] is metal
 		if num==0: return
 		start=(rng.randint(0,self.size[0]-1),rng.randint(0,self.size[1]-1),rng.randint(0,self.size[2]-1))
+		metal_locs=[]
 		while self.earth[start[0]][start[1]][start[2]].lid!=1:
 			start=(rng.randint(0,self.size[0]-1),rng.randint(0,self.size[1]-1),rng.randint(0,self.size[2]-1))
-		self.earth[start[0]][start[1]][start[2]]=location(lid)
+		metal_locs.append(start)
+		diffs=[(1,0,0),(-1,0,0),(0,1,0),(0,-1,0),(0,0,1),(0,0,-1)]
+		while len(metal_locs)<num:
+			focus=rng.choice(metal_locs)
+			tmp_diffs=rng.sample(diffs,3)
+			tmp_locs=[tuple(sum(x) for x in zip(focus,diff)) for diff in tmp_diffs]
+			for tmp_loc in tmp_locs:
+				if tmp_loc[0]>=0 and tmp_loc[0]<self.size[0]:
+					if tmp_loc[1]>=0 and tmp_loc[1]<self.size[1]:
+						if tmp_loc[2]>=0 and tmp_loc[2]<self.size[2]:
+							if self.earth[tmp_loc[0]][tmp_loc[1]][tmp_loc[2]].lid==1:
+								metal_locs.append(tmp_loc)
+		while len(metal_locs)>num:
+			metal_locs.pop()
+		for loc in metal_locs:
+			self.earth[loc[0]][loc[1]][loc[2]]=location(lid)
 
 class World(object):
 	def __init__(self):
@@ -156,7 +185,7 @@ class World(object):
 		self.p("Names read into memory.")
 
 		self.p("Creating world...")
-		self.earth_size=(50,50,10)
+		self.earth_size=(50,50,11)
 		self.earth=earth(self.earth_size)
 		self.p("World created.")
 
@@ -252,7 +281,7 @@ class World(object):
 			for y in range(self.earth_size[1]):
 				pygame.draw.rect(self.screen,self.earth.earth[x][y][self.level].color,(12*x+1,12*y+1,10,10),0)
 		# now we draw RHS of stuff
-		
+		self.text("z = %i"%(-self.level),12,RED,(610,5))
 
 	def run(self):
 		while True:
@@ -266,10 +295,10 @@ class World(object):
 					if event.key==ord('m'):
 						self.buy_miner((0,0,0))
 					if event.key==ord(',') and KMOD_SHIFT:
-						self.p("Moving out of the earth one level")
+#						self.p("Moving out of the earth one level")
 						self.level=max(self.level-1,0)
 					if event.key==ord('.') and KMOD_SHIFT:
-						self.p("Moving into the earth one level")
+#						self.p("Moving into the earth one level")
 						self.level=min(self.level+1,self.earth_size[2]-1)
 				if event.type==pygame.QUIT:
 					pygame.quit()
