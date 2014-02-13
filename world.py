@@ -114,7 +114,7 @@ class earth(object):
 		start=(rng.randint(0,self.size[0]-1),rng.randint(0,self.size[1]-1),rng.randint(0,self.size[2]-1))
 		while self.earth[start[0]][start[1]][start[2]].lid!=1:
 			start=(rng.randint(0,self.size[0]-1),rng.randint(0,self.size[1]-1),rng.randint(0,self.size[2]-1))
-		self.earth[start[0]][start[1]][start[2]]
+		self.earth[start[0]][start[1]][start[2]]=location(lid)
 
 class World(object):
 	def __init__(self):
@@ -125,6 +125,8 @@ class World(object):
 		self.bg_color=BLACK
 		self.screen.fill(self.bg_color)
 		self.dwarf_list=[]
+		# initial level (0 = top)
+		self.level=0
 
 		self.text("Dwarf Beards",90,WHITE,location=(0,200),centerx=True)
 		self.text("created by",20,WHITE,location=(0,350),centerx=True)
@@ -144,6 +146,7 @@ class World(object):
 				if event.type==pygame.QUIT:
 					pygame.quit()
 					sys.exit()
+			self.clock.tick(self.framerate)
 		self.screen.fill(BLACK)
 		pygame.display.update()
 		self.clock.tick(self.framerate)
@@ -153,7 +156,8 @@ class World(object):
 		self.p("Names read into memory.")
 
 		self.p("Creating world...")
-		self.earth=earth((50,50,5))
+		self.earth_size=(50,50,10)
+		self.earth=earth(self.earth_size)
 		self.p("World created.")
 
 		self.run()
@@ -193,6 +197,12 @@ class World(object):
 		y+=20
 		self.text("m",20,WHITE,(20,y))
 		self.text("- Buy a miner",20,WHITE,(60,y))
+		y+=20
+		self.text("<",20,WHITE,(20,y))
+		self.text("- Up one z level",20,WHITE,(60,y))
+		y+=20
+		self.text(">",20,WHITE,(20,y))
+		self.text("- Down one z level",20,WHITE,(60,y))
 
 
 		pygame.display.update()
@@ -210,7 +220,7 @@ class World(object):
 				if event.type==pygame.QUIT:
 					pygame.quit()
 					sys.exit()
-
+			self.clock.tick(self.framerate)
 
 	def text(self,msg,size,color,location=(0,0),centerx=False,centery=False):
 		f=pygame.font.SysFont(None,size)
@@ -238,6 +248,11 @@ class World(object):
 		todo:	draw all the stuff
 		"""
 		self.screen.fill(BLACK)
+		for x in range(self.earth_size[0]):
+			for y in range(self.earth_size[1]):
+				pygame.draw.rect(self.screen,self.earth.earth[x][y][self.level].color,(12*x+1,12*y+1,10,10),0)
+		# now we draw RHS of stuff
+		
 
 	def run(self):
 		while True:
@@ -250,6 +265,12 @@ class World(object):
 						self.help()
 					if event.key==ord('m'):
 						self.buy_miner((0,0,0))
+					if event.key==ord(',') and KMOD_SHIFT:
+						self.p("Moving out of the earth one level")
+						self.level=max(self.level-1,0)
+					if event.key==ord('.') and KMOD_SHIFT:
+						self.p("Moving into the earth one level")
+						self.level=min(self.level+1,self.earth_size[2]-1)
 				if event.type==pygame.QUIT:
 					pygame.quit()
 					sys.exit()

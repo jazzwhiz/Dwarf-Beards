@@ -8,8 +8,6 @@ v 0.01
 import pygame
 import world
 
-print __name__
-
 if __name__=="__main__":
 	pygame.init()
 	world.World()
