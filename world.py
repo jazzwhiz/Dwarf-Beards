@@ -299,7 +299,8 @@ class World(object):
 			pygame.draw.line(self.screen,WHITE,focus_corners[i],focus_corners[(i+1)%4],2)
 
 		# now we draw RHS of stuff
-		self.text("z = %i"%(-self.level),14,RED,(610,5))
+		self.text("z = %i"%(-self.level),15,RED,(610,5))
+		self.text(self.earth.earth[self.focus[0]][self.focus[1]][self.level].name,15,RED,(650,5))
 
 	def run(self):
 		while True:
@@ -315,22 +316,25 @@ class World(object):
 						self.buy_miner((0,0,0))
 
 					# move focus in the z direction
-					if event.key==ord(',') and KMOD_SHIFT:
+					if event.key==ord(',') and pygame.key.get_mods() in [1,2,3]:
 #						self.p("Moving out of the earth one level")
 						self.level=max(self.level-1,0)
-					if event.key==ord('.') and KMOD_SHIFT:
+					if event.key==ord('.') and pygame.key.get_mods() in [1,2,3]:
 #						self.p("Moving into the earth one level")
 						self.level=min(self.level+1,self.earth_size[2]-1)
 
 					# move focus in the plane, modularly (I'm not a monster)
+					mod=1
+					if pygame.key.get_mods() in [1,2,3]:
+						mod=10
 					if event.key==K_UP:
-						self.focus=(self.focus[0],(self.focus[1]-1)%self.earth_size[1])
+						self.focus=(self.focus[0],(self.focus[1]-mod)%self.earth_size[1])
 					if event.key==K_DOWN:
-						self.focus=(self.focus[0],(self.focus[1]+1)%self.earth_size[1])
+						self.focus=(self.focus[0],(self.focus[1]+mod)%self.earth_size[1])
 					if event.key==K_LEFT:
-						self.focus=((self.focus[0]-1)%self.earth_size[0],self.focus[1])
+						self.focus=((self.focus[0]-mod)%self.earth_size[0],self.focus[1])
 					if event.key==K_RIGHT:
-						self.focus=((self.focus[0]+1)%self.earth_size[0],self.focus[1])
+						self.focus=((self.focus[0]+mod)%self.earth_size[0],self.focus[1])
 
 				if event.type==pygame.QUIT:
 					pygame.quit()
