@@ -38,6 +38,7 @@ class dwarf(object):
 		# do internal things first
 		self.thirst+=self.thirst_inc
 		if self.thirst>=1:
+			print "%s is thirsty..."%self.name
 			self.goal==tasks.drink(self.earth)
 
 		# update current task

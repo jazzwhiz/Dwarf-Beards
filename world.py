@@ -33,6 +33,7 @@ BROWN=(139,69,19)
 GOLD=(255,215,0)
 RED=(255,0,0)
 DARK_BLUE=(0,0,100)
+YELLOW=(255,255,0)
 
 class obj(object):
 	"""
@@ -164,12 +165,14 @@ class World(object):
 		self.screen_size=(800,600)
 		self.screen=pygame.display.set_mode(self.screen_size)
 		self.clock=pygame.time.Clock()
-		self.framerate=60
+		self.framerate=40
 		self.bg_color=BLACK
 		self.screen.fill(self.bg_color)
 		self.dwarf_list=[]
 		self.task_queue=[]
-		self.notifications=[]
+		self.notification_clock=-1
+		self.notification_index=0
+		self.log_msgs=[]
 
 		pygame.key.set_repeat(200,50)
 
@@ -192,7 +195,7 @@ class World(object):
 					pygame.quit()
 					sys.exit()
 			self.clock.tick(self.framerate)
-		self.screen.fill(BLACK)
+		self.screen.fill(self.bg_color)
 		pygame.display.update()
 		self.clock.tick(self.framerate)
 		
@@ -211,10 +214,15 @@ class World(object):
 		self.focus_loc=self.earth.earth[self.focus[0]][self.focus[1]][self.level]
 		self.p("World created.")
 
+		self.notification_clock=-1
+		self.notification_index=4
+
 		self.run()
 
-
 	def p(self,s):
+		if self.notification_clock==-1:
+			self.notification_clock=0
+		self.log_msgs.append(s)
 		print s
 
 	def notify(self,s):
@@ -244,7 +252,7 @@ class World(object):
 		last.close()
 
 	def help(self):
-		self.screen.fill(BLACK)
+		self.screen.fill(self.bg_color)
 
 		y=20
 
@@ -253,6 +261,9 @@ class World(object):
 		y+=20
 		self.text("h",20,WHITE,(20,y))
 		self.text("- Toggle this help screen",20,WHITE,(60,y))
+		y+=20
+		self.text("l",20,WHITE,(20,y))
+		self.text("- Toggle log view",20,WHITE,(60,y))
 		y+=20
 		self.text("n",20,WHITE,(20,y))
 		self.text("- Buy a new dwarf",20,WHITE,(60,y))
@@ -287,8 +298,38 @@ class World(object):
 					sys.exit()
 			self.clock.tick(self.framerate)
 
-	def text(self,msg,size,color,location=(0,0),centerx=False,centery=False):
-		f=pygame.font.SysFont(None,size)
+	def log(self):
+		self.screen.fill(self.bg_color)
+
+		y=10
+		i=len(self.log_msgs)
+		while y<self.screen_size[1]-18 and i>0:
+			i-=1
+			if i==len(self.log_msgs)-1:
+				self.text(self.log_msgs[i],20,YELLOW,(10,y))
+			else:
+				self.text(self.log_msgs[i],20,WHITE,(10,y))
+			y+=18
+		
+		pygame.display.update()
+		self.clock.tick(self.framerate)
+
+		logging=True
+		while logging:
+			self.events=pygame.event.get()
+			for event in self.events:
+				if event.type==KEYDOWN:
+					if event.key==K_ESCAPE:
+						pygame.event.post(pygame.event.Event(QUIT))
+					if event.key==ord('l'):
+						logging=False
+				if event.type==pygame.QUIT:
+					pygame.quit()
+					sys.exit()
+			self.clock.tick(self.framerate)
+
+	def text(self,msg,size,color,location=(0,0),centerx=False,centery=False,bold=False):
+		f=pygame.font.SysFont(None,size,bold=bold)
 		t=f.render(msg,True,color)
 		tRect=t.get_rect()
 		tRect.left=location[0]
@@ -311,27 +352,30 @@ class World(object):
 		"""
 		todo:	draw all the stuff
 		"""
-		self.screen.fill(BLACK)
+		self.screen.fill(self.bg_color)
 		
 		# draw the earth
 		for x in range(self.earth_size[0]):
 			for y in range(self.earth_size[1]):
-				# todo: draw dotted pattern for floor
-				pygame.draw.rect(self.screen,self.earth.earth[x][y][self.level].color,(12*x+1,12*y+1,10,10),0)
+				if self.earth.earth[x][y][self.level].empty:
+					pygame.draw.rect(self.screen,self.earth.earth[x][y][self.level].color,(12*x+2,12*y+2,8,8),3)
+				else:
+					pygame.draw.rect(self.screen,self.earth.earth[x][y][self.level].color,(12*x+1,12*y+1,10,10),0)
 		for task in self.task_queue:
 			if task.loc[2]==self.level:
 				# digging down
 				if task.tid==2:
-					pygame.draw.line(self.screen,BLACK,(12*task.loc[0]+10,12*task.loc[1]+1),(12*task.loc[0]+1,12*task.loc[1]+10),2)
-					pygame.draw.line(self.screen,BLACK,(12*task.loc[0]+1,12*task.loc[1]+1),(12*task.loc[0]+10,12*task.loc[1]+10),2)
+					pygame.draw.line(self.screen,self.bg_color,(12*task.loc[0]+10,12*task.loc[1]+1),(12*task.loc[0]+1,12*task.loc[1]+10),2)
+					pygame.draw.line(self.screen,self.bg_color,(12*task.loc[0]+1,12*task.loc[1]+1),(12*task.loc[0]+10,12*task.loc[1]+10),2)
 				# mining out
 				if task.tid==3:
-					pygame.draw.line(self.screen,BLACK,(12*task.loc[0]+10,12*task.loc[1]+1),(12*task.loc[0]+1,12*task.loc[1]+10),2)
+					pygame.draw.line(self.screen,self.bg_color,(12*task.loc[0]+10,12*task.loc[1]+1),(12*task.loc[0]+1,12*task.loc[1]+10),2)
 
 		# draw the dwarves
 		for dwarf in self.dwarf_list:
 			if dwarf.loc[2]==self.level:
-				pygame.draw.circle(self.screen,BLACK,(12*dwarf.loc[0]+6,12*dwarf.loc[1]+6),5,0)
+				self.text("@",18,RED,(12*dwarf.loc[0],12*dwarf.loc[1]-2),bold=True)
+#				pygame.draw.circle(self.screen,self.bg_color,(12*dwarf.loc[0]+6,12*dwarf.loc[1]+6),5,0)
 
 		# draw the focus box
 		focus_corners=[
@@ -360,6 +404,17 @@ class World(object):
 			self.text(obj.name,15,DARK_BLUE,(625,y))
 			y+=16
 
+		# draw notification
+		if self.notification_clock>-1:
+			self.text(self.log_msgs[self.notification_index],18,WHITE,(610,550))
+			self.notification_clock+=1
+			if self.notification_clock==50:
+				self.notification_index+=1
+				if self.notification_index<len(self.log_msgs):
+					self.notification_clock=0
+				else:
+					self.notification_clock=-1
+	
 	def update(self):
 		self.focus_loc=self.earth.earth[self.focus[0]][self.focus[1]][self.level]
 		for dwarf in self.dwarf_list:
@@ -376,6 +431,8 @@ class World(object):
 						pygame.event.post(pygame.event.Event(QUIT))
 					if event.key==ord('h'):
 						self.help()
+					if event.key==ord('l'):
+						self.log()
 
 					# dwarf action
 					if event.key==ord('n'):
