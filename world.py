@@ -37,7 +37,7 @@ DARK_BLUE=(0,0,100)
 class obj(object):
 	"""
 	things that are at locations
-	0:	earth:			stuff that was dug out of the earth
+	0:	pile of earth:	stuff that was dug out of the earth
 	1:	axe:			digs in anything
 	2:	shovel:			cheaper than axe, digs in soil only
 	3:	cart:			hauls one half of one location away
@@ -45,7 +45,7 @@ class obj(object):
 	5:	trading post:	turn resources into moneys
 	"""
 	oid_dict={
-		0:("Earth"),
+		0:("Pile of earth"),
 		1:("Axe"),
 		2:("Shovel"),
 		3:("Cart"),
@@ -70,7 +70,7 @@ class obj(object):
 	def destroy(self):
 		self.__del__(self)
 
-class rock(obj):
+class pile(obj):
 	def __init__(self,lid):
 		self.oid=0
 		self.lid=lid
