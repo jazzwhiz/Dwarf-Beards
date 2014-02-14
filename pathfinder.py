@@ -8,7 +8,7 @@ def jump(earth,cx,cy,dx,dy,start,end):
 	cx,cy=current
 	dx,dy=direction going
 	start,end are tuples
-	returns a tuple
+	returns a tuple to go to
 	"""
 	nextx=cx+dx
 	nexty=cy+dy
@@ -23,7 +23,7 @@ def jump(earth,cx,cy,dx,dy,start,end):
 
 	
 	if dx!=0 and dy!=0:
-		
+		return
 
 
 def idSuccessor(current,start,end):
@@ -33,6 +33,6 @@ def path(earth,start,end):
 	"""
 	earth is a 3d array of elements that have the property "empty", if empty it is walkable, else else
 	start,end are 3-tuples
-	returns a list of 3-tuples with the first tuple one step away from start and the last is equal to the end
+	returns a list of 3-tuple diffs
 	"""
 	return

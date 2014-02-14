@@ -155,7 +155,7 @@ class World(object):
 		self.bg_color=BLACK
 		self.screen.fill(self.bg_color)
 		self.dwarf_list=[]
-		self.job_queue=[]
+		self.task_queue=[]
 		self.notifications=[]
 
 		pygame.key.set_repeat(200,50)
@@ -244,6 +244,12 @@ class World(object):
 		self.text("n",20,WHITE,(20,y))
 		self.text("- Buy a new dwarf",20,WHITE,(60,y))
 		y+=20
+		self.text("d",20,WHITE,(20,y))
+		self.text("- Dig (horizontal)",20,WHITE,(60,y))
+		y+=20
+		self.text("m",20,WHITE,(20,y))
+		self.text("- Mine (down)",20,WHITE,(60,y))
+		y+=20
 		self.text("<",20,WHITE,(20,y))
 		self.text("- Up one z level",20,WHITE,(60,y))
 		y+=20
@@ -299,6 +305,15 @@ class World(object):
 		for x in range(self.earth_size[0]):
 			for y in range(self.earth_size[1]):
 				pygame.draw.rect(self.screen,self.earth.earth[x][y][self.level].color,(12*x+1,12*y+1,10,10),0)
+		for task in self.task_queue:
+			if task.loc[2]==self.level:
+				# digging down
+				if task.tid==2:
+					pygame.draw.line(self.screen,BLACK,(12*task.loc[0]+10,12*task.loc[1]+1),(12*task.loc[0]+1,12*task.loc[1]+10),2)
+					pygame.draw.line(self.screen,BLACK,(12*task.loc[0]+1,12*task.loc[1]+1),(12*task.loc[0]+10,12*task.loc[1]+10),2)
+				# mining out
+				if task.tid==3:
+					pygame.draw.line(self.screen,BLACK,(12*task.loc[0]+10,12*task.loc[1]+1),(12*task.loc[0]+1,12*task.loc[1]+10),2)
 
 		# draw the dwarves
 		for dwarf in self.dwarf_list:
@@ -358,10 +373,31 @@ class World(object):
 
 					# adding tasks
 					if event.key==ord('d'):
-						if self.focus_loc.empty:
-							self.notify("Nothing to dig out here.")
+						if self.level>=self.earth_size[2]-1:
+							self.notify("If you dig any deeper you'll hit magma, better not...")
+						elif self.earth.earth[self.focus[0]][self.focus[1]][self.level+1].empty:
+							self.notify("It is already empty beneath here.")
 						else:
-							self.task_queue.append(tasks.task())
+							something=False
+							for task in self.task_queue:
+								if task.tid in [2,3]:
+									if task.loc==self.focus+(self.level,):
+										self.notify("We are already %s here."%task.lower())
+										something=True
+							if not something:
+								self.task_queue.append(tasks.dig(self.earth,self.focus+(self.level,),0))
+					if event.key==ord('m'):
+						if self.focus_loc.empty:
+							self.notify("It is already empty here.")
+						else:
+							something=False
+							for task in self.task_queue:
+								if task.tid in [2,3]:
+									if task.loc==self.focus+(self.level,):
+										self.notify("We are already %s here."%task.lower())
+										something=True
+							if not something:
+								self.task_queue.append(tasks.mine(self.earth,self.focus+(self.level,),0))
 
 					# move focus in the z direction
 					if event.key==ord(',') and pygame.key.get_mods() in [1,2,3]:

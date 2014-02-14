@@ -35,16 +35,19 @@ class dwarf(object):
 			self.beard+=1
 
 	def update(self):
+		# do internal things first
+		self.thirst+=self.thirst_inc
+		if self.thirst>=1:
+			self.goal==tasks.beer()
+
+		# update current task
 		self.task.update(self.loc)
 
 		self.loc=tuple(sum(x) for x in zip(self.loc,self.task.move()))
 
-		self.thirst+=self.thirst_inc
 
 		# update goals
 		# beer has highest priority
-		if self.thirst>=1:
-			self.goal=="beer"
 
 		# turn goals into actions
 		if self.action==None and self.goal!=None:
