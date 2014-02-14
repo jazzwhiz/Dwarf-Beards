@@ -34,27 +34,30 @@ GOLD=(255,215,0)
 RED=(255,0,0)
 DARK_BLUE=(0,0,100)
 
-class objs(object):
+class obj(object):
 	"""
 	things that are at locations
-	0:	axe:			digs in anything
-	1:	shovel:			cheaper than axe, digs in soil only
-	2:	cart:			hauls one half of one location away
-	3:	ladder:			allows for movement vertically
-	4:	trading post:	turn resources into moneys
+	0:	earth:			stuff that was dug out of the earth
+	1:	axe:			digs in anything
+	2:	shovel:			cheaper than axe, digs in soil only
+	3:	cart:			hauls one half of one location away
+	4:	ladder:			allows for movement vertically
+	5:	trading post:	turn resources into moneys
 	"""
 	oid_dict={
-		0:("Axe"),
-		1:("Shovel"),
-		2:("Cart"),
-		3:("Ladder"),
-		4:("Trading post")
+		0:("Earth"),
+		1:("Axe"),
+		2:("Shovel"),
+		3:("Cart"),
+		4:("Ladder"),
+		5:("Trading post")
 		}
 	def __init__(self,oid):
 		self.oid=oid
 		self.name=self.oid_dict[self.oid]
 		self.condition=1
-		if self.oid==0:
+		self.condition_inc=0
+		if self.oid==1:
 			# will last between 25 and 50 uses
 			self.condition_inc=(rng.random()+1)/50
 
@@ -66,6 +69,14 @@ class objs(object):
 		self.condition=1
 	def destroy(self):
 		self.__del__(self)
+
+class rock(obj):
+	def __init__(self,lid):
+		self.oid=0
+		self.lid=lid
+		self.condition=1
+		self.condition_inc=0
+		self.name="Pile of %s"%location.lid_dict[lid]
 
 class location(object):
 	"""
@@ -117,7 +128,7 @@ class earth(object):
 					self.earth[x][y][z]=location(1)
 		for lid in range(2,5):
 			for num_veins in range(rng.randint(2,6)):
-				self.seed_materials(rng.randint(25,150),lid)
+				self.seed_materials(rng.randint(25,100),lid)
 	def seed_materials(self,num,lid):
 		"""
 		num:	how many locs should have the material
@@ -140,7 +151,9 @@ class earth(object):
 					if tmp_loc[1]>=0 and tmp_loc[1]<self.size[1]:
 						if tmp_loc[2]>=0 and tmp_loc[2]<self.size[2]:
 							if self.earth[tmp_loc[0]][tmp_loc[1]][tmp_loc[2]].lid==1:
-								metal_locs.append(tmp_loc)
+								if tmp_loc not in metal_locs:
+									metal_locs.append(tmp_loc)
+		# in case we accidentally added too many on the last step
 		while len(metal_locs)>num:
 			metal_locs.pop()
 		for loc in metal_locs:
@@ -288,8 +301,7 @@ class World(object):
 
 	def buy_dwarf(self,loc):
 		"""
-		todo:	where does miner go?
-				take out funds
+		todo:	take out funds
 		"""
 		self.p("Buying a dwarf...")
 		self.dwarf_list.append(dwarves.dwarf(self.earth,loc))
@@ -304,6 +316,7 @@ class World(object):
 		# draw the earth
 		for x in range(self.earth_size[0]):
 			for y in range(self.earth_size[1]):
+				# todo: draw dotted pattern for floor
 				pygame.draw.rect(self.screen,self.earth.earth[x][y][self.level].color,(12*x+1,12*y+1,10,10),0)
 		for task in self.task_queue:
 			if task.loc[2]==self.level:

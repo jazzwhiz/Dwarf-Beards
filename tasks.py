@@ -57,14 +57,18 @@ class idle(task):
 
 		# check if possible to wander or not
 		self.stuck=True
+		self.movable_diffs=[]
 		for diff in diffs:
-			if self.earth.earth[self.loc[0]+diff[0]][self.loc[1]+diff[1]][self.loc[2]+diff[2]].empty:
-				self.stuck=False
+			if 0<=self.loc[0]+diff[0] and self.loc[0]+diff[0]<self.earth.size[0]:
+				if 0<=self.loc[1]+diff[1] and self.loc[1]+diff[1]<self.earth.size[1]:
+					if self.earth.earth[self.loc[0]+diff[0]][self.loc[1]+diff[1]][self.loc[2]+diff[2]].empty:
+						self.stuck=False
+						self.movable_diffs.append(diff)
 
 		# pick a direction at random
 		if not self.stuck:
-			rng.shuffle(diffs)
-			for diff in diffs:
+			rng.shuffle(self.movable_diffs)
+			for diff in self.movable_diffs:
 				if self.earth.earth[self.loc[0]+diff[0]][self.loc[1]+diff[1]][self.loc[2]+diff[2]].empty:
 					self.diff=diff
 					break
@@ -130,5 +134,7 @@ class mine(task):
 		self.wait=wait
 		self.waited=0
 
-
+class drink(task):
+	def __init__(self,earth):
+		self.earth=earth
 

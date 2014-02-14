@@ -23,9 +23,9 @@ class dwarf(object):
 		# an action is what is happening right now, and will always finish before the goal
 		self.action=None
 		self.thirst=0
-		# thirst increases between 1/500 and 2/500, so it takes between 250,500 updates to become thirsty
+		# thirst increases between 1/500 and 2/5000, so it takes between 2500,5000 updates to become thirsty
 		# maybe make this applied gaussian
-		self.thirst_inc=(rng.random()+1)/500.
+		self.thirst_inc=(rng.random()+1)/5000.
 	def __str__(self):
 		return "%s with beard length %i and is %s"%(self.name,self.beard,self.task)
 		
@@ -38,7 +38,7 @@ class dwarf(object):
 		# do internal things first
 		self.thirst+=self.thirst_inc
 		if self.thirst>=1:
-			self.goal==tasks.beer()
+			self.goal==tasks.drink(self.earth)
 
 		# update current task
 		self.task.update(self.loc)
