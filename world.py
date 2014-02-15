@@ -10,12 +10,13 @@ copyright="(c) 2014 Peter Denton"
 import pygame,sys,random
 import numpy as np
 from pygame.locals import *
-import jps,Astar
 
 # initialize rng
 seed=1888
 rng=random.Random()
 rng.seed(seed)
+
+import jps,Astar
 
 # Names
 firsts=[]

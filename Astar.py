@@ -6,8 +6,11 @@ http://www.laurentluce.com/posts/solving-mazes-using-python-simple-recursivity-a
 #!/usr/bin/python
 
 import heapq
+#from world import rng
 
-__version__="0.02"
+# todo: make it select horiz/vert first randomly
+# todo: make z work
+__version__="0.03"
 
 class Cell(object):
 	def __init__(self,x,y,reachable):
