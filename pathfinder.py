@@ -31,7 +31,7 @@ def jump(grid,current,d,start,end):
 
 # not done
 def is_forced(grid,x):
-	
+	pass
 
 # done
 diffs=[]
@@ -50,8 +50,8 @@ def neighbors(grid,x):
 	return ns
 
 # not done
-def prune(grid,x,ns,d):
-	if 
+#def prune(grid,x,ns,d):
+#	if 
 
 # done
 def id_successor(grid,current,start,end):

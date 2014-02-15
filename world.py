@@ -48,8 +48,6 @@ class dwarf(object):
 		self.task=idle(self.earth,self.loc,self.idle_time)
 		# what to do after current action is done
 		self.goal=None
-		# an action is what is happening right now, and will always finish before the goal
-		self.action=None
 		self.thirst=0
 		# thirst increases between 1/500 and 2/5000, so it takes between 2500,5000 updates to become thirsty
 		# maybe make this applied gaussian
@@ -79,23 +77,23 @@ class dwarf(object):
 		if self.task.target_loc!=None and self.task.target_loc!=self.loc:
 			# this means that we already have a goal and another task that requires walking
 			if self.goal!=None:
+				print self.task,self.goal
 				raise
 			self.goal=self.task
 			self.task=walk(self.earth,self.loc,self.task.target_loc,self.walk_wait)
 
+		# check if task is complete
+		if self.task.complete:
+			if self.goal==None:
+				self.task=idle(self.earth,self.loc,self.idle_time)
+			else:
+				self.task=self.goal
+				self.goal=None
+
 		# update current task
-		self.task.update(self.loc)
+		self.task.update()
 
 		self.loc=tuple(sum(x) for x in zip(self.loc,self.task.move()))
-
-		# update goals
-		# beer has highest priority
-
-		# turn goals into actions
-		if self.action==None and self.goal!=None:
-			self.action=self.goal
-		if self.action==None and self.goal==None:
-			self.action=idle(self.earth,self.loc,self.idle_time)
 
 # tasks
 class task(object):
@@ -118,13 +116,19 @@ class task(object):
 		5:"Drink",
 		6:"Sleep"
 		}
+
+	def init(self):
+		self.name=self.tid_dict[self.tid]
+		self.complete=False
+
 	def __str__(self):
 		if self.name[-1]=="e":
 			return "%sing"%self.name[:-1]
 		else:
 			return "%sing"%self.name
-	def update(self,loc):
-		pass
+#	def update(self):
+#		pass
+
 	def move(self):
 		"""
 		returns a delta, must be normed to one
@@ -135,12 +139,15 @@ class task(object):
 		self.__del__(self)
 
 class idle(task):
+	def update(self):
+		pass
+
 	"""
 	pace on the same floor only
 	"""
 	def __init__(self,earth,start,wait):
 		self.tid=0
-		self.name=self.tid_dict[self.tid]
+		self.init()
 
 		self.target_loc=None
 
@@ -171,11 +178,6 @@ class idle(task):
 					self.diff=diff
 					break
 
-	def update(self,loc):
-		"""
-		updates the current location as necessary
-		"""
-		self.loc=loc
 	def move(self):
 		if not self.stuck:
 			self.waited+=1
@@ -187,23 +189,24 @@ class idle(task):
 					return tuple(-x for x in self.diff)
 			else:
 				return (0,0,0)
+		else:
+			return (0,0,0)
 
 class walk(task):
-	def __init__(self,earth,start,end,wait):
+	def __init__(self,earth,start,target_loc,wait):
 		self.tid=1
-		self.name=self.tid_dict[self.tid]
+		self.init()
 
 		self.earth=earth
 		self.start=start
 		self.loc=start
-		self.target_loc=end
+		self.target_loc=target_loc
 		self.wait=wait
 		self.waited=0
 		self.path=pathfinder.path(self.earth,self.start,self.target_loc)
 
-	def update(self,loc):
-		self.loc=loc
-		if self.loc==self.end:
+	def update(self):
+		if self.loc==self.target_loc:
 			self.complete=True
 
 	def move(self):
@@ -217,7 +220,7 @@ class walk(task):
 class dig(task):
 	def __init__(self,earth,loc,wait):
 		self.tid=2
-		self.name=self.tid_dict[self.tid]
+		self.init()
 
 		self.earth=earth
 		self.target_loc=loc
@@ -227,14 +230,20 @@ class dig(task):
 	def update(self):
 		self.waited+=1
 		if self.waited>=self.wait:
-			self.earth.grid[self.target_loc[0]][self.target_loc[1]][self.target_loc[2]]=True
-			self.earth.earth[self.target_loc[0]][self.target_loc[1]][self.target_loc[2]].empty=True
-			self.complete=True
+			self.finish()
+
+	def finish(self):
+		self.earth.grid[self.target_loc[0]][self.target_loc[1]][self.target_loc[2]]=True
+		self.earth.earth[self.target_loc[0]][self.target_loc[1]][self.target_loc[2]].floor=True
+		self.complete=True
 
 class mine(task):
+	"""
+	the location is the top of the hole
+	"""
 	def __init__(self,earth,loc,wait):
 		self.tid=3
-		self.name=self.tid_dict[self.tid]
+		self.init()
 		
 		self.earth=earth
 		self.target_loc=loc
@@ -244,12 +253,22 @@ class mine(task):
 	def update(self):
 		self.waited+=1
 		if self.waited>=self.wait:
-			self.earth.grid[self.target_loc[0]][self.target_loc[1]][self.target_loc[2]+1]=True
-			self.earth.earth[self.target_loc[0]][self.target_loc[1]][self.target_loc[2]+1].empty=True
-			self.complete=True
+			self.finish()
+
+	def finish(self):
+		# one beneath is now a floor
+		self.earth.grid[self.target_loc[0]][self.target_loc[1]][self.target_loc[2]+1]=True
+		self.earth.earth[self.target_loc[0]][self.target_loc[1]][self.target_loc[2]+1].floor=True
+		self.earth.earth[self.target_loc[0]][self.target_loc[1]][self.target_loc[2]+1].empty=True
+		# itself is now empty, but not a floor
+		self.earth.earth[self.target_loc[0]][self.target_loc[1]][self.target_loc[2]].empty=True
+		self.earth.earth[self.target_loc[0]][self.target_loc[1]][self.target_loc[2]].floor=False
+		self.complete=True
 
 class drink(task):
 	def __init__(self,earth):
+		self.tid=6
+		self.init()
 		self.earth=earth
 
 class obj(object):
@@ -307,10 +326,10 @@ class location(object):
 		3	gold
 		4	iron
 	properties are:
-		diff:	difficulty to dig (0 = nothing, 1 = easy, 10 = quite hard)
+		diff:			difficulty to dig (0 = nothing, 1 = easy, 10 = quite hard)
 		color
-		objs:	list of objects contained, must be empty of lid!=0
-		empty:	boolean, whether or not it is dug out or not, default is False
+		objs:			list of objects contained, must be empty of lid!=0
+		empty,floor:	bools. If empty then can walk/climb. If floor then can put stuff on.
 	"""
 	lid_dict={
 		0:("Soil",1,BROWN),
@@ -321,6 +340,7 @@ class location(object):
 		}
 	def __init__(self,lid):
 		self.objs=[]
+		self.floor=False
 		self.empty=False
 		self.lid=lid
 		self.name=self.lid_dict[lid][0]
@@ -342,6 +362,7 @@ class earth(object):
 				# we note here that z=0 is the surface
 				self.earth[x][y][0]=location(0)
 				self.earth[x][y][0].empty=True
+				self.earth[x][y][0].floor=True
 				self.grid[x][y][0]=True
 				# put bedrock everywhere else
 				for z in range(1,self.size[2]):
@@ -393,6 +414,7 @@ class World(object):
 		self.notification_clock=-1
 		self.notification_index=0
 		self.log_msgs=[]
+		self.paused=False
 
 		pygame.key.set_repeat(200,50)
 
@@ -466,31 +488,40 @@ class World(object):
 	def help(self):
 		self.screen.fill(self.bg_color)
 
-		y=20
+		fs=20
+		x_offset1=20
+		x_offset2=65
 
-		self.text("esc",20,WHITE,(20,y))
-		self.text("- Exit",20,WHITE,(60,y))
-		y+=20
-		self.text("h",20,WHITE,(20,y))
-		self.text("- Toggle this help screen",20,WHITE,(60,y))
-		y+=20
-		self.text("l",20,WHITE,(20,y))
-		self.text("- Toggle log view",20,WHITE,(60,y))
-		y+=20
-		self.text("n",20,WHITE,(20,y))
-		self.text("- Buy a new dwarf",20,WHITE,(60,y))
-		y+=20
-		self.text("d",20,WHITE,(20,y))
-		self.text("- Dig (horizontal)",20,WHITE,(60,y))
-		y+=20
-		self.text("m",20,WHITE,(20,y))
-		self.text("- Mine (down)",20,WHITE,(60,y))
-		y+=20
-		self.text("<",20,WHITE,(20,y))
-		self.text("- Up one z level",20,WHITE,(60,y))
-		y+=20
-		self.text(">",20,WHITE,(20,y))
-		self.text("- Down one z level",20,WHITE,(60,y))
+		f=pygame.font.SysFont(None,fs)
+		ls=f.get_linesize()
+
+		y=ls
+		self.text("esc",20,WHITE,(x_offset1,y))
+		self.text("- Exit",20,WHITE,(x_offset2,y))
+		y+=ls
+		self.text("h",20,WHITE,(x_offset1,y))
+		self.text("- Toggle this help screen",20,WHITE,(x_offset2,y))
+		y+=ls
+		self.text("l",20,WHITE,(x_offset1,y))
+		self.text("- Toggle log view",20,WHITE,(x_offset2,y))
+		y+=ls
+		self.text("space",20,WHITE,(x_offset1,y))
+		self.text("- Pause/Unpause",20,WHITE,(x_offset2,y))
+		y+=ls
+		self.text("n",20,WHITE,(x_offset1,y))
+		self.text("- Buy a new dwarf",20,WHITE,(x_offset2,y))
+		y+=ls
+		self.text("d",20,WHITE,(x_offset1,y))
+		self.text("- Dig (horizontal)",20,WHITE,(x_offset2,y))
+		y+=ls
+		self.text("m",20,WHITE,(x_offset1,y))
+		self.text("- Mine (down)",20,WHITE,(x_offset2,y))
+		y+=ls
+		self.text("<",20,WHITE,(x_offset1,y))
+		self.text("- Up one z level",20,WHITE,(x_offset2,y))
+		y+=ls
+		self.text(">",20,WHITE,(x_offset1,y))
+		self.text("- Down one z level",20,WHITE,(x_offset2,y))
 
 
 		pygame.display.update()
@@ -503,7 +534,7 @@ class World(object):
 				if event.type==KEYDOWN:
 					if event.key==K_ESCAPE:
 						pygame.event.post(pygame.event.Event(QUIT))
-					if event.key==ord('h'):
+					if event.unicode=="h":
 						helping=False
 				if event.type==pygame.QUIT:
 					pygame.quit()
@@ -533,7 +564,7 @@ class World(object):
 				if event.type==KEYDOWN:
 					if event.key==K_ESCAPE:
 						pygame.event.post(pygame.event.Event(QUIT))
-					if event.key==ord('l'):
+					if event.unicode=="l":
 						logging=False
 				if event.type==pygame.QUIT:
 					pygame.quit()
@@ -569,8 +600,10 @@ class World(object):
 		# draw the earth
 		for x in range(self.earth_size[0]):
 			for y in range(self.earth_size[1]):
-				if self.earth.earth[x][y][self.level].empty:
+				if self.earth.earth[x][y][self.level].floor:
 					pygame.draw.rect(self.screen,self.earth.earth[x][y][self.level].color,(12*x+2,12*y+2,8,8),3)
+				elif self.earth.earth[x][y][self.level].empty:
+					continue
 				else:
 					pygame.draw.rect(self.screen,self.earth.earth[x][y][self.level].color,(12*x+1,12*y+1,10,10),0)
 		for task in self.task_queue:
@@ -578,19 +611,19 @@ class World(object):
 			if task.target_loc==None:
 				continue
 			if task.target_loc[2]==self.level:
-				# digging down
+				# digging out
 				if task.tid==2:
+					pygame.draw.line(self.screen,self.bg_color,
+						(12*task.target_loc[0]+10,12*task.target_loc[1]+1),
+						(12*task.target_loc[0]+1,12*task.target_loc[1]+10),2)
+				# mining down
+				if task.tid==3:
 					pygame.draw.line(self.screen,self.bg_color,
 						(12*task.target_loc[0]+10,12*task.target_loc[1]+1),
 						(12*task.target_loc[0]+1,12*task.target_loc[1]+10),2)
 					pygame.draw.line(self.screen,self.bg_color,
 						(12*task.target_loc[0]+1,12*task.target_loc[1]+1),
 						(12*task.target_loc[0]+10,12*task.target_loc[1]+10),2)
-				# mining out
-				if task.tid==3:
-					pygame.draw.line(self.screen,self.bg_color,
-						(12*task.target_loc[0]+10,12*task.target_loc[1]+1),
-						(12*task.target_loc[0]+1,12*task.target_loc[1]+10),2)
 
 		# draw the dwarves
 		for dwarf in self.dwarf_list:
@@ -611,8 +644,10 @@ class World(object):
 		# now we draw RHS of stuff
 		self.text("(%i,%i,%i)"%(self.focus[0],self.focus[1],-self.level),15,RED,(610,5))
 
-		if self.focus_loc.empty:
+		if self.focus_loc.floor:
 			self.text("%s floor"%self.focus_loc.name,15,RED,(680,5))
+		elif self.focus_loc.empty:
+			self.text("Air",15,RED,(680,5))
 		else:
 			self.text(self.focus_loc.name,15,RED,(680,5))
 
@@ -625,11 +660,12 @@ class World(object):
 			self.text(obj.name,15,DARK_BLUE,(625,y))
 			y+=16
 
-		self.text("Task queue: %i"%len(self.task_queue),15,LIGHT_GRAY,(610,535))
+		# task Q
+		self.text("Task queue: %i"%len(self.task_queue),15,LIGHT_GRAY,(610,520))
 
 		# draw notification
 		if self.notification_clock>-1:
-			self.text(self.log_msgs[self.notification_index],15,WHITE,(610,550))
+			self.text(self.log_msgs[self.notification_index],15,WHITE,(610,535))
 			self.notification_clock+=1
 			if self.notification_clock==50:
 				self.notification_index+=1
@@ -638,8 +674,11 @@ class World(object):
 				else:
 					self.notification_clock=-1
 	
+		# is paused?
+		if self.paused:
+			self.text("<PAUSED>",15,LIGHT_GRAY,(610,550))
+
 	def update(self):
-		self.focus_loc=self.earth.earth[self.focus[0]][self.focus[1]][self.level]
 		for dwarf in self.dwarf_list:
 			dwarf.update()
 		for task in self.task_queue:
@@ -656,26 +695,27 @@ class World(object):
 			self.events=pygame.event.get()
 			for event in self.events:
 				if event.type==KEYDOWN:
-
 					# general game action
 					if event.key==K_ESCAPE:
 						pygame.event.post(pygame.event.Event(QUIT))
-					if event.key==ord('h'):
+					if event.unicode=="h":
 						self.help()
-					if event.key==ord('l'):
+					if event.unicode=="l":
 						self.log()
+					if event.key==K_SPACE:
+						self.paused=(not self.paused)
 
 					# dwarf action
-					if event.key==ord('n'):
-						if self.focus_loc.empty:
+					if event.unicode=="n":
+						if self.focus_loc.floor:
 							self.buy_dwarf(self.focus+(self.level,))
 						else:
 							self.p("Cannot place dwarf here.")
 
 					# adding tasks
-					if event.key==ord('d'):
+					if event.unicode=="m":
 						if self.level>=self.earth_size[2]-1:
-							self.p("If you dig any deeper you'll hit magma, better not...")
+							self.p("If you mine any deeper you'll hit magma, better not...")
 						elif self.earth.earth[self.focus[0]][self.focus[1]][self.level+1].empty:
 							self.p("It is already empty beneath here.")
 						else:
@@ -684,11 +724,12 @@ class World(object):
 								task=task[0]
 								if task.tid in [2,3]:
 									if task.target_loc==self.focus+(self.level,):
-										self.p("We are already %s here."%task.lower())
+										self.p("We are already %s here."%task.__str__().lower())
 										something=True
 							if not something:
-								self.task_queue.append([dig(self.earth,self.focus+(self.level,),0),None])
-					if event.key==ord('m'):
+								self.task_queue.append([mine(self.earth,self.focus+(self.level,),
+									self.earth.earth[self.focus[0]][self.focus[1]][self.level+1].diff),None])
+					if event.unicode=="d":
 						if self.focus_loc.empty:
 							self.p("It is already empty here.")
 						else:
@@ -696,16 +737,16 @@ class World(object):
 							for task in self.task_queue:
 								if task.tid in [2,3]:
 									if task.target_loc==self.focus+(self.level,):
-										self.p("We are already %s here."%task.lower())
+										self.p("We are already %s here."%task.__str__().lower())
 										something=True
 							if not something:
-								self.task_queue.append([mine(self.earth,self.focus+(self.level,),0),None])
+								self.task_queue.append([dig(self.earth,self.focus+(self.level,),self.focus_loc.diff),None])
 
 					# move focus in the z direction
-					if event.key==ord(',') and pygame.key.get_mods() in [1,2,3]:
+					if event.unicode=="<":
 #						self.p("Moving out of the earth one level")
 						self.level=max(self.level-1,0)
-					if event.key==ord('.') and pygame.key.get_mods() in [1,2,3]:
+					if event.unicode==">":
 #						self.p("Moving into the earth one level")
 						self.level=min(self.level+1,self.earth_size[2]-1)
 
@@ -722,10 +763,14 @@ class World(object):
 					if event.key==K_RIGHT:
 						self.focus=((self.focus[0]+mod)%self.earth_size[0],self.focus[1])
 
+					self.focus_loc=self.earth.earth[self.focus[0]][self.focus[1]][self.level]
+
 				if event.type==pygame.QUIT:
 					pygame.quit()
 					sys.exit()
-			self.update()
+			if not self.paused:
+				self.update()
+
 			self.draw()
 			pygame.display.update()
 			self.clock.tick(self.framerate)
