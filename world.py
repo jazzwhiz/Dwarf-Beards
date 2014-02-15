@@ -56,7 +56,7 @@ class dwarf(object):
 		# laziness is a prob that a task is accepted out of idle
 		self.laziness=rng.random()/10.
 		# how fast?
-		self.walk_wait=int(self.idle_time/(2+rng.random()))
+		self.walk_wait=int(self.idle_time/(3*(2+rng.random())))
 	def __str__(self):
 		return "%s with beard length %i and is %s"%(self.name,self.beard,self.task)
 
@@ -200,14 +200,13 @@ class walk(task):
 		self.target_loc=target_loc
 		self.wait=wait
 		self.waited=0
-		self.path=Astar.Astar(grid,self.loc,self.target_loc).get_path()
-		print self.path
+		self.path=Astar.Astar(self.grid,self.loc,self.target_loc).get_path()
+#		self.jump_points=jps.path(self.grid,self.loc,self.target_loc)
 
 	def update(self,loc):
 		self.loc=loc
 		if self.loc==self.target_loc:
 			self.complete=True
-			print len(self.path)
 
 	def move(self):
 		self.waited+=1
@@ -215,7 +214,6 @@ class walk(task):
 			self.waited=0
 			new_loc=self.path.pop()+(self.loc[2],)
 			delta=tuple(z[0]-z[1] for z in zip(new_loc,self.loc))
-			print delta
 			self.loc=new_loc
 			return delta
 		else:
@@ -403,7 +401,8 @@ class earth(object):
 		while len(metal_locs)>num:
 			metal_locs.pop()
 		for loc in metal_locs:
-			self.earth[loc[0]][loc[1]][loc[2]]=location(lid)
+			self.earth[loc]=location(lid)
+			self.grid[loc]=False
 
 class World(object):
 	def __init__(self):

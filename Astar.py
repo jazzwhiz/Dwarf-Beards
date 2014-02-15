@@ -68,7 +68,6 @@ class Astar(object):
 		while cell.parent is not self.start:
 			cell = cell.parent
 			self.path.append((cell.x,cell.y))
-#			print 'path: cell: %d,%d' % (cell.x, cell.y)
 
 	def update_cell(self, adj, cell):
 		adj.g = cell.g + 10
