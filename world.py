@@ -8,6 +8,7 @@ v 0.01
 import pygame,sys,random
 import numpy as np
 from pygame.locals import *
+import pathfinder
 
 # initialize rng
 seed=1888
@@ -17,8 +18,6 @@ rng.seed(seed)
 # Names
 firsts=[]
 lasts=[]
-
-import dwarves,tasks
 
 # Some colors
 # Grayscale
@@ -34,6 +33,224 @@ GOLD=(255,215,0)
 RED=(255,0,0)
 DARK_BLUE=(0,0,100)
 YELLOW=(255,255,0)
+
+class dwarf(object):
+	def __init__(self,earth,loc):
+		self.earth=earth
+		self.beard=0
+		# p(beard increasing +1) is between 1/10 and 2/10
+		self.beard_inc=(rng.random()+1)/10.
+		self.name="%s %s"%(rng.choice(firsts),rng.choice(lasts))
+		# loc is an ordered pair (x,y,z)
+		self.loc=loc
+		# initially should be idle, idle_time is a measure of impatience
+		self.idle_time=rng.randint(40,200)
+		self.task=idle(self.earth,self.loc,self.idle_time)
+		# what to do after current action is done
+		self.goal=None
+		# an action is what is happening right now, and will always finish before the goal
+		self.action=None
+		self.thirst=0
+		# thirst increases between 1/500 and 2/5000, so it takes between 2500,5000 updates to become thirsty
+		# maybe make this applied gaussian
+		self.thirst_inc=(rng.random()+1)/5000.
+		# laziness is a prob that a task is accepted out of idle
+		self.laziness=rng.random()/10.
+		# how fast?
+		self.walk_wait=int(self.idle_time/(2+rng.random()))
+	def __str__(self):
+		return "%s with beard length %i and is %s"%(self.name,self.beard,self.task)
+
+	"""	
+	def beer(self):
+		self.thirst=0
+		if rng.random()<self.beard_inc:
+			self.beard+=1
+	"""
+
+	def update(self):
+		# do internal things first
+		self.thirst+=self.thirst_inc
+		if self.thirst>=1:
+			print "%s is thirsty..."%self.name
+			self.goal==drink(self.earth)
+
+		# check current task
+		if self.task.target_loc!=None and self.task.target_loc!=self.loc:
+			# this means that we already have a goal and another task that requires walking
+			if self.goal!=None:
+				raise
+			self.goal=self.task
+			self.task=walk(self.earth,self.loc,self.task.target_loc,self.walk_wait)
+
+		# update current task
+		self.task.update(self.loc)
+
+		self.loc=tuple(sum(x) for x in zip(self.loc,self.task.move()))
+
+		# update goals
+		# beer has highest priority
+
+		# turn goals into actions
+		if self.action==None and self.goal!=None:
+			self.action=self.goal
+		if self.action==None and self.goal==None:
+			self.action=idle(self.earth,self.loc,self.idle_time)
+
+# tasks
+class task(object):
+	"""
+	requires a task id which is also it's priority
+	0: Idle (lowest priority)
+	1: Walk
+	2: Dig	(horizontal)
+	3: Mine	(down)
+	4: Eat
+	5: Drink
+	6: Sleep (highest priority)
+	"""
+	tid_dict={
+		0:"Idle",
+		1:"Walk",
+		2:"Dig",
+		3:"Mine",
+		4:"Eat",
+		5:"Drink",
+		6:"Sleep"
+		}
+	def __str__(self):
+		if self.name[-1]=="e":
+			return "%sing"%self.name[:-1]
+		else:
+			return "%sing"%self.name
+	def update(self,loc):
+		pass
+	def move(self):
+		"""
+		returns a delta, must be normed to one
+		"""
+		return (0,0,0)
+
+	def destroy(self):
+		self.__del__(self)
+
+class idle(task):
+	"""
+	pace on the same floor only
+	"""
+	def __init__(self,earth,start,wait):
+		self.tid=0
+		self.name=self.tid_dict[self.tid]
+
+		self.target_loc=None
+
+		diffs=[(1,0,0),(-1,0,0),(0,1,0),(0,-1,0)]
+
+		self.earth=earth
+		self.start=start
+		self.loc=start
+		self.wait=wait
+		self.waited=0
+		self.complete=False
+
+		# check if possible to wander or not
+		self.stuck=True
+		self.movable_diffs=[]
+		for diff in diffs:
+			if 0<=self.loc[0]+diff[0] and self.loc[0]+diff[0]<self.earth.size[0]:
+				if 0<=self.loc[1]+diff[1] and self.loc[1]+diff[1]<self.earth.size[1]:
+					if self.earth.earth[self.loc[0]+diff[0]][self.loc[1]+diff[1]][self.loc[2]+diff[2]].empty:
+						self.stuck=False
+						self.movable_diffs.append(diff)
+
+		# pick a direction at random
+		if not self.stuck:
+			rng.shuffle(self.movable_diffs)
+			for diff in self.movable_diffs:
+				if self.earth.earth[self.loc[0]+diff[0]][self.loc[1]+diff[1]][self.loc[2]+diff[2]].empty:
+					self.diff=diff
+					break
+
+	def update(self,loc):
+		"""
+		updates the current location as necessary
+		"""
+		self.loc=loc
+	def move(self):
+		if not self.stuck:
+			self.waited+=1
+			if self.waited>self.wait:
+				self.waited=0
+				if self.loc==self.start:
+					return self.diff
+				else:
+					return tuple(-x for x in self.diff)
+			else:
+				return (0,0,0)
+
+class walk(task):
+	def __init__(self,earth,start,end,wait):
+		self.tid=1
+		self.name=self.tid_dict[self.tid]
+
+		self.earth=earth
+		self.start=start
+		self.loc=start
+		self.target_loc=end
+		self.wait=wait
+		self.waited=0
+		self.path=pathfinder.path(self.earth,self.start,self.target_loc)
+
+	def update(self,loc):
+		self.loc=loc
+		if self.loc==self.end:
+			self.complete=True
+
+	def move(self):
+		self.waited+=1
+		if self.waited>self.wait:
+			self.waited=0
+			return self.path.pop[0]
+		else:
+			return (0,0,0)
+
+class dig(task):
+	def __init__(self,earth,loc,wait):
+		self.tid=2
+		self.name=self.tid_dict[self.tid]
+
+		self.earth=earth
+		self.target_loc=loc
+		self.wait=wait
+		self.waited=0
+
+	def update(self):
+		self.waited+=1
+		if self.waited>=self.wait:
+			self.earth.grid[self.target_loc[0]][self.target_loc[1]][self.target_loc[2]]=True
+			self.earth.earth[self.target_loc[0]][self.target_loc[1]][self.target_loc[2]].empty=True
+			self.complete=True
+
+class mine(task):
+	def __init__(self,earth,loc,wait):
+		self.tid=3
+		self.name=self.tid_dict[self.tid]
+		
+		self.earth=earth
+		self.target_loc=loc
+		self.wait=wait
+		self.waited=0
+
+	def update(self):
+		self.waited+=1
+		if self.waited>=self.wait:
+			self.earth.grid[self.target_loc[0]][self.target_loc[1]][self.target_loc[2]+1]=True
+			self.earth.earth[self.target_loc[0]][self.target_loc[1]][self.target_loc[2]+1].empty=True
+			self.complete=True
+
+class drink(task):
+	def __init__(self,earth):
+		self.earth=earth
 
 class obj(object):
 	"""
@@ -119,14 +336,17 @@ class earth(object):
 	def __init__(self,size):
 		self.size=size
 		self.earth=np.empty(self.size,dtype=location)
+		self.grid=np.empty(self.size,dtype=bool)
 		for x in range(self.size[0]):
 			for y in range(self.size[1]):
 				# we note here that z=0 is the surface
 				self.earth[x][y][0]=location(0)
 				self.earth[x][y][0].empty=True
+				self.grid[x][y][0]=True
 				# put bedrock everywhere else
 				for z in range(1,self.size[2]):
 					self.earth[x][y][z]=location(1)
+					self.grid[x][y][z]=False
 		for lid in range(2,5):
 			for num_veins in range(rng.randint(2,6)):
 				self.seed_materials(rng.randint(25,100),lid)
@@ -224,14 +444,6 @@ class World(object):
 			self.notification_clock=0
 		self.log_msgs.append(s)
 		print s
-
-	def notify(self,s):
-		"""
-		todo:
-		make this work
-		"""
-		self.notifications.append(s)
-		self.p(s)
 
 	def init_names(self,):
 		# set up names
@@ -345,8 +557,8 @@ class World(object):
 		todo:	take out funds
 		"""
 		self.p("Buying a dwarf...")
-		self.dwarf_list.append(dwarves.dwarf(self.earth,loc))
-		self.p("Bought dwarf %s"%self.dwarf_list[-1])
+		self.dwarf_list.append(dwarf(self.earth,loc))
+		self.p("Bought dwarf %s"%self.dwarf_list[-1].name)
 
 	def draw(self):
 		"""
@@ -362,14 +574,23 @@ class World(object):
 				else:
 					pygame.draw.rect(self.screen,self.earth.earth[x][y][self.level].color,(12*x+1,12*y+1,10,10),0)
 		for task in self.task_queue:
-			if task.loc[2]==self.level:
+			task=task[0]
+			if task.target_loc==None:
+				continue
+			if task.target_loc[2]==self.level:
 				# digging down
 				if task.tid==2:
-					pygame.draw.line(self.screen,self.bg_color,(12*task.loc[0]+10,12*task.loc[1]+1),(12*task.loc[0]+1,12*task.loc[1]+10),2)
-					pygame.draw.line(self.screen,self.bg_color,(12*task.loc[0]+1,12*task.loc[1]+1),(12*task.loc[0]+10,12*task.loc[1]+10),2)
+					pygame.draw.line(self.screen,self.bg_color,
+						(12*task.target_loc[0]+10,12*task.target_loc[1]+1),
+						(12*task.target_loc[0]+1,12*task.target_loc[1]+10),2)
+					pygame.draw.line(self.screen,self.bg_color,
+						(12*task.target_loc[0]+1,12*task.target_loc[1]+1),
+						(12*task.target_loc[0]+10,12*task.target_loc[1]+10),2)
 				# mining out
 				if task.tid==3:
-					pygame.draw.line(self.screen,self.bg_color,(12*task.loc[0]+10,12*task.loc[1]+1),(12*task.loc[0]+1,12*task.loc[1]+10),2)
+					pygame.draw.line(self.screen,self.bg_color,
+						(12*task.target_loc[0]+10,12*task.target_loc[1]+1),
+						(12*task.target_loc[0]+1,12*task.target_loc[1]+10),2)
 
 		# draw the dwarves
 		for dwarf in self.dwarf_list:
@@ -379,10 +600,10 @@ class World(object):
 
 		# draw the focus box
 		focus_corners=[
-			(12*self.focus[0],12*self.focus[1]),
-			(12*(self.focus[0]+1),12*self.focus[1]),
+			(12*self.focus[0]-2,12*self.focus[1]-2),
+			(12*(self.focus[0]+1),12*self.focus[1]-2),
 			(12*(self.focus[0]+1),12*(self.focus[1]+1)),
-			(12*self.focus[0],12*(self.focus[1]+1))
+			(12*self.focus[0]-2,12*(self.focus[1]+1))
 			]
 		for i in range(4):
 			pygame.draw.line(self.screen,WHITE,focus_corners[i],focus_corners[(i+1)%4],2)
@@ -404,9 +625,11 @@ class World(object):
 			self.text(obj.name,15,DARK_BLUE,(625,y))
 			y+=16
 
+		self.text("Task queue: %i"%len(self.task_queue),15,LIGHT_GRAY,(610,535))
+
 		# draw notification
 		if self.notification_clock>-1:
-			self.text(self.log_msgs[self.notification_index],18,WHITE,(610,550))
+			self.text(self.log_msgs[self.notification_index],15,WHITE,(610,550))
 			self.notification_clock+=1
 			if self.notification_clock==50:
 				self.notification_index+=1
@@ -419,6 +642,14 @@ class World(object):
 		self.focus_loc=self.earth.earth[self.focus[0]][self.focus[1]][self.level]
 		for dwarf in self.dwarf_list:
 			dwarf.update()
+		for task in self.task_queue:
+			if task[1]==None:
+				for dwarf in self.dwarf_list:
+					if dwarf.task.tid==0:
+						if rng.random()<dwarf.laziness:
+							dwarf.task=task[0]
+							task[1]=dwarf
+							self.p("Assigned %s to %s"%(task[0].name,dwarf.name))
 
 	def run(self):
 		while True:
@@ -439,35 +670,36 @@ class World(object):
 						if self.focus_loc.empty:
 							self.buy_dwarf(self.focus+(self.level,))
 						else:
-							self.notify("Cannot place dwarf here.")
+							self.p("Cannot place dwarf here.")
 
 					# adding tasks
 					if event.key==ord('d'):
 						if self.level>=self.earth_size[2]-1:
-							self.notify("If you dig any deeper you'll hit magma, better not...")
+							self.p("If you dig any deeper you'll hit magma, better not...")
 						elif self.earth.earth[self.focus[0]][self.focus[1]][self.level+1].empty:
-							self.notify("It is already empty beneath here.")
+							self.p("It is already empty beneath here.")
 						else:
 							something=False
 							for task in self.task_queue:
+								task=task[0]
 								if task.tid in [2,3]:
-									if task.loc==self.focus+(self.level,):
-										self.notify("We are already %s here."%task.lower())
+									if task.target_loc==self.focus+(self.level,):
+										self.p("We are already %s here."%task.lower())
 										something=True
 							if not something:
-								self.task_queue.append(tasks.dig(self.earth,self.focus+(self.level,),0))
+								self.task_queue.append([dig(self.earth,self.focus+(self.level,),0),None])
 					if event.key==ord('m'):
 						if self.focus_loc.empty:
-							self.notify("It is already empty here.")
+							self.p("It is already empty here.")
 						else:
 							something=False
 							for task in self.task_queue:
 								if task.tid in [2,3]:
-									if task.loc==self.focus+(self.level,):
-										self.notify("We are already %s here."%task.lower())
+									if task.target_loc==self.focus+(self.level,):
+										self.p("We are already %s here."%task.lower())
 										something=True
 							if not something:
-								self.task_queue.append(tasks.mine(self.earth,self.focus+(self.level,),0))
+								self.task_queue.append([mine(self.earth,self.focus+(self.level,),0),None])
 
 					# move focus in the z direction
 					if event.key==ord(',') and pygame.key.get_mods() in [1,2,3]:
