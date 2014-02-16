@@ -160,7 +160,7 @@ class idle(task):
 		for diff in diffs:
 			if 0<=self.loc[0]+diff[0] and self.loc[0]+diff[0]<self.earth.size[0]:
 				if 0<=self.loc[1]+diff[1] and self.loc[1]+diff[1]<self.earth.size[1]:
-					if self.earth.earth[self.loc[0]+diff[0]][self.loc[1]+diff[1]][self.loc[2]+diff[2]].empty:
+					if self.earth.earth[tuple(sum(z) for z in zip(self.loc,diff))].empty:
 						self.stuck=False
 						self.movable_diffs.append(diff)
 
@@ -168,7 +168,7 @@ class idle(task):
 		if not self.stuck:
 			rng.shuffle(self.movable_diffs)
 			for diff in self.movable_diffs:
-				if self.earth.earth[self.loc[0]+diff[0]][self.loc[1]+diff[1]][self.loc[2]+diff[2]].empty:
+				if self.earth.earth[tuple(sum(z) for z in zip(self.loc,diff))].empty:
 					self.diff=diff
 					break
 
@@ -236,8 +236,9 @@ class dig(task):
 			self.finish()
 
 	def finish(self):
-		self.earth.grid[self.target_loc[0]][self.target_loc[1]][self.target_loc[2]]=True
-		self.earth.earth[self.target_loc[0]][self.target_loc[1]][self.target_loc[2]].floor=True
+		self.earth.grid[self.target_loc]=True
+		self.earth.earth[self.target_loc].floor=True
+		self.earth.earth[self.target_loc].objs.append(pile(self.earth.earth[self.target_loc].lid))
 		self.complete=True
 
 class mine(task):
@@ -260,12 +261,15 @@ class mine(task):
 
 	def finish(self):
 		# one beneath is now a floor
-		self.earth.grid[self.target_loc[0]][self.target_loc[1]][self.target_loc[2]+1]=True
-		self.earth.earth[self.target_loc[0]][self.target_loc[1]][self.target_loc[2]+1].floor=True
-		self.earth.earth[self.target_loc[0]][self.target_loc[1]][self.target_loc[2]+1].empty=True
+		new_floor=tuple(sum(z) for z in zip(self.target_loc,(0,0,1)))
+		self.earth.grid[new_floor]=True
+		self.earth.earth[new_floor].floor=True
+		self.earth.earth[new_floor].empty=True
+		self.earth.earth[new_floor].objs.append(pile(self.earth.earth[new_floor].lid))
+
 		# itself is now empty, but not a floor
-		self.earth.earth[self.target_loc[0]][self.target_loc[1]][self.target_loc[2]].empty=True
-		self.earth.earth[self.target_loc[0]][self.target_loc[1]][self.target_loc[2]].floor=False
+		self.earth.earth[self.target_loc].empty=True
+		self.earth.earth[self.target_loc].floor=False
 		self.complete=True
 
 class drink(task):
@@ -369,8 +373,8 @@ class earth(object):
 				self.grid[x][y][0]=True
 				# put bedrock everywhere else
 				for z in range(1,self.size[2]):
-					self.earth[x][y][z]=location(1)
-					self.grid[x][y][z]=False
+					self.earth[(x,y,z)]=location(1)
+					self.grid[(x,y,z)]=False
 		for lid in range(2,5):
 			for num_veins in range(rng.randint(2,6)):
 				self.seed_materials(rng.randint(25,100),lid)
@@ -383,7 +387,7 @@ class earth(object):
 		if num==0: return
 		start=(rng.randint(0,self.size[0]-1),rng.randint(0,self.size[1]-1),rng.randint(0,self.size[2]-1))
 		metal_locs=[]
-		while self.earth[start[0]][start[1]][start[2]].lid!=1:
+		while self.earth[start].lid!=1:
 			start=(rng.randint(0,self.size[0]-1),rng.randint(0,self.size[1]-1),rng.randint(0,self.size[2]-1))
 		metal_locs.append(start)
 		diffs=[(1,0,0),(-1,0,0),(0,1,0),(0,-1,0),(0,0,1),(0,0,-1)]
@@ -395,7 +399,7 @@ class earth(object):
 				if tmp_loc[0]>=0 and tmp_loc[0]<self.size[0]:
 					if tmp_loc[1]>=0 and tmp_loc[1]<self.size[1]:
 						if tmp_loc[2]>=0 and tmp_loc[2]<self.size[2]:
-							if self.earth[tmp_loc[0]][tmp_loc[1]][tmp_loc[2]].lid==1 or True:
+							if self.earth[tmp_loc].lid==1 or True:
 								if tmp_loc not in metal_locs:
 									metal_locs.append(tmp_loc)
 		# in case we accidentally added too many on the last step
@@ -458,7 +462,7 @@ class World(object):
 		self.level=0
 		# focus
 		self.focus=(self.earth_size[0]/2,self.earth_size[1]/2)
-		self.focus_loc=self.earth.earth[self.focus[0]][self.focus[1]][self.level]
+		self.focus_loc=self.earth.earth[self.focus+(self.level,)]
 		self.p("World created.")
 
 		self.notification_clock=-1
@@ -605,12 +609,12 @@ class World(object):
 		# draw the earth
 		for x in range(self.earth_size[0]):
 			for y in range(self.earth_size[1]):
-				if self.earth.earth[x][y][self.level].floor:
-					pygame.draw.rect(self.screen,self.earth.earth[x][y][self.level].color,(12*x+2,12*y+2,8,8),3)
-				elif self.earth.earth[x][y][self.level].empty:
+				if self.earth.earth[(x,y,self.level)].floor:
+					pygame.draw.rect(self.screen,self.earth.earth[(x,y,self.level)].color,(12*x+2,12*y+2,8,8),3)
+				elif self.earth.earth[(x,y,self.level)].empty:
 					continue
 				else:
-					pygame.draw.rect(self.screen,self.earth.earth[x][y][self.level].color,(12*x+1,12*y+1,10,10),0)
+					pygame.draw.rect(self.screen,self.earth.earth[(x,y,self.level)].color,(12*x+1,12*y+1,10,10),0)
 		for task in self.task_queue:
 			if task.target_loc==None:
 				continue
@@ -720,7 +724,7 @@ class World(object):
 					if event.unicode=="m":
 						if self.level>=self.earth_size[2]-1:
 							self.p("If you mine any deeper you'll hit magma, better not...")
-						elif self.earth.earth[self.focus[0]][self.focus[1]][self.level+1].empty:
+						elif self.earth.earth[self.focus+(self.level+1,)].empty:
 							self.p("It is already empty beneath here.")
 						else:
 							something=False
@@ -731,7 +735,7 @@ class World(object):
 										something=True
 							if not something:
 								self.task_queue.append(mine(self.earth,self.focus+(self.level,),
-									self.earth.earth[self.focus[0]][self.focus[1]][self.level+1].diff))
+									self.earth.earth[self.focus+(self.level+1,)].diff))
 					if event.unicode=="d":
 						if self.focus_loc.empty:
 							self.p("It is already empty here.")
@@ -766,7 +770,7 @@ class World(object):
 					if event.key==K_RIGHT:
 						self.focus=((self.focus[0]+mod)%self.earth_size[0],self.focus[1])
 
-					self.focus_loc=self.earth.earth[self.focus[0]][self.focus[1]][self.level]
+					self.focus_loc=self.earth.earth[self.focus+(self.level,)]
 
 				if event.type==pygame.QUIT:
 					pygame.quit()

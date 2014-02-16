@@ -107,4 +107,5 @@ class Astar(object):
 
 	def get_path(self):
 		self.process()
+		print self.path
 		return self.path
