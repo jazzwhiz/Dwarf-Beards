@@ -1,6 +1,8 @@
-#include "world.h"
-	
+#include <iostream>
+
+#include "World.h"
+
 int main(){
-	world();
+	World world;
 	return 0;	
 }   

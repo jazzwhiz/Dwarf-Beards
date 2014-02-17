@@ -1,24 +1,24 @@
 CXX=g++
-CFlags=-Wall -O3
+CXXFLAGS=-Wall -O3
 AllegroFlags=`allegro-config --libs`
 
 EXEC	= db
 SRC     = $(wildcard *.cpp)
 OBJ     = $(patsubst %.cpp,%.o,$(SRC))
-DEP     = $(patsubst %.cpp,%.d,$(SRC))
 
-all: $(DEP) $(EXEC)
+all: $(SRC) $(EXEC)
+
+-include $(OBJ:.o=.d)
 
 $(EXEC): $(OBJ)
-	$(CXX) $(OBJ) $(CFlags) $(AllegroFlags) -o $@
+	$(CXX) $(OBJ) $(CXXFLAGS) $(AllegroFlags) -o $@
 
-%.d:
-	$(CXX) -MM $(CFlags) $(AllegroFlags) $(SRC) > $@
+# compile and generate dependency info
+%.o: %.cpp
+	$(CXX) -c $(CXXFLAGS) $*.cpp -o $*.o
+	$(CXX) -MM $(CXXFLAGS) $*.cpp > $*.d
 
-.cpp.o:
-	$(CXX) -c $(CFlags) $(AllegroFlags) $< -o $@
+.phony: clean
 
 clean:
 	rm -rf $(OBJ) $(EXEC) *~ *.d
-
--include $(DEP)
