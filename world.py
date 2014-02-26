@@ -4,7 +4,7 @@ Dwarf Beards
 """
 #!/usr/bin/python
 
-__version__="0.01"
+__version__="0.02"
 copyright="(c) 2014 Peter Denton"
 
 import pygame,sys,random
@@ -58,6 +58,8 @@ class dwarf(object):
 		self.laziness=rng.random()/10.
 		# how fast?
 		self.walk_wait=int(self.idle_time/(3*(2+rng.random())))
+		# pickaxe speed (for digging, mining)
+		self.pickaxe_wait=rng.randint(5,20)
 	def __str__(self):
 		return "%s with beard length %i and is %s"%(self.name,self.beard,self.task)
 
@@ -72,16 +74,16 @@ class dwarf(object):
 		# do internal things first
 		self.thirst+=self.thirst_inc
 		if self.thirst>=1:
-			print "%s is thirsty..."%self.name
 			self.goal==drink(self.earth)
 
 		# check if have to move to current task
-		if self.task.target_loc!=None and self.task.target_loc!=self.loc and self.task.tid!=1:
+		if self.task.target_loc!=None and self.task.tid!=1:
+			if sum(tuple(abs(z[1]-z[0]) for z in zip(self.task.target_loc,self.loc)))>self.task.fuzziness:
 			# this means that we already have a goal and another task that requires walking
-			if self.goal!=None:
-				raise
-			self.goal=self.task
-			self.task=walk(self.earth.grid,self.loc,self.task.target_loc,self.walk_wait)
+				if self.goal!=None:
+					raise
+				self.goal=self.task
+				self.task=walk(self.earth.grid,self.loc,self.task.target_loc,self.task.fuzziness,self.walk_wait)
 
 		# check if task is complete
 		if self.task.complete:
@@ -122,6 +124,8 @@ class task(object):
 		self.name=self.tid_dict[self.tid]
 		self.complete=False
 		self.dwarf=None
+		# distance to location that is acceptable
+		self.fuzziness=0
 
 	def __str__(self):
 		if self.name[-1]=="e":
@@ -192,28 +196,43 @@ class idle(task):
 			return (0,0,0)
 
 class walk(task):
-	def __init__(self,grid,loc,target_loc,wait):
+	def __init__(self,grid,loc,target_loc,target_fuzziness,wait):
+		"""
+		target_fuzziness:	how far away you have to be to be done walking
+							for digging is 1, else it should be 0
+		"""
 		self.tid=1
 		self.init()
 
 		self.grid=grid
 		self.loc=loc
 		self.target_loc=target_loc
+		self.target_fuzziness=target_fuzziness
 		self.wait=wait
 		self.waited=0
-		self.path=Astar.Astar(self.grid,self.loc,self.target_loc).get_path()
+		self.path=Astar.Astar(self.grid,rng,self.loc,self.target_loc).get_path()
 #		self.jump_points=jps.path(self.grid,self.loc,self.target_loc)
 
 	def update(self,loc):
 		self.loc=loc
-		if self.loc==self.target_loc:
-			self.complete=True
+		if self.target_fuzziness==0:
+			if self.loc==self.target_loc:
+				self.complete=True
+		else:
+			if sum(tuple(abs(z[0]-z[1]) for z in zip(self.loc,self.target_loc)))==1:
+				self.complete=True
 
 	def move(self):
 		self.waited+=1
 		if self.waited>self.wait:
 			self.waited=0
-			new_loc=self.path.pop()+(self.loc[2],)
+			try:
+				new_loc=self.path.pop()
+			except IndexError:
+				if self.target_fuzziness==1:
+					return (0,0,0)
+				else:
+					new_loc=self.target_loc
 			delta=tuple(z[0]-z[1] for z in zip(new_loc,self.loc))
 			self.loc=new_loc
 			return delta
@@ -224,6 +243,7 @@ class dig(task):
 	def __init__(self,earth,loc,wait):
 		self.tid=2
 		self.init()
+		self.fuzziness=1
 
 		self.earth=earth
 		self.target_loc=loc
@@ -232,7 +252,7 @@ class dig(task):
 
 	def update(self,loc):
 		self.waited+=1
-		if self.waited>=self.wait:
+		if self.waited>=2*self.wait*self.dwarf.pickaxe_wait:
 			self.finish()
 
 	def finish(self):
@@ -256,7 +276,7 @@ class mine(task):
 
 	def update(self,loc):
 		self.waited+=1
-		if self.waited>=self.wait:
+		if self.waited>=4*self.wait*self.dwarf.pickaxe_wait:
 			self.finish()
 
 	def finish(self):
@@ -320,7 +340,7 @@ class pile(obj):
 		self.lid=lid
 		self.condition=1
 		self.condition_inc=0
-		self.name="Pile of %s"%location.lid_dict[lid]
+		self.name="Pile of %s"%location.lid_dict[lid][0]
 
 class location(object):
 	"""
@@ -596,7 +616,6 @@ class World(object):
 		"""
 		todo:	take out funds
 		"""
-		self.p("Buying a dwarf...")
 		self.dwarf_list.append(dwarf(self.earth,loc))
 		self.p("Bought dwarf %s"%self.dwarf_list[-1].name)
 
@@ -687,17 +706,24 @@ class World(object):
 			self.text("<PAUSED>",15,LIGHT_GRAY,(610,550))
 
 	def update(self):
+		for task in self.task_queue:
+			if task.complete:
+				self.task_queue.remove(task)
 		for dwarf in self.dwarf_list:
 			dwarf.update()
-		for task in self.task_queue:
-			if task.dwarf==None:
-				for dwarf in self.dwarf_list:
-					if dwarf.task.tid==0:
-						if rng.random()<dwarf.laziness:
-							dwarf.task=task
-							task.dwarf=dwarf
-							self.p("Assigned %s to %s"%(task.name,dwarf.name))
-
+			if dwarf.task.tid==0:
+				if rng.random()<dwarf.laziness:
+					i=0
+					while i<len(self.task_queue):
+						task=self.task_queue[i]
+						if task.dwarf==None:
+							if (dwarf.loc==task.target_loc or sum(tuple(abs(z[1]-z[0]) for z in zip(dwarf.loc,task.target_loc)))==1+task.fuzziness
+								or len(Astar.Astar(self.earth.grid,rng,dwarf.loc,task.target_loc).get_path())>0):
+									dwarf.task=task
+									task.dwarf=dwarf
+									self.p("Assigned %s to %s"%(task.name,dwarf.name))
+									i=len(self.task_queue)
+						i+=1
 	def run(self):
 		while True:
 			self.events=pygame.event.get()

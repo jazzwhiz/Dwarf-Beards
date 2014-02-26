@@ -9,71 +9,77 @@ import heapq
 #from world import rng
 
 # todo: make it select horiz/vert first randomly
-# todo: make z work
-__version__="0.03"
+__version__="0.10"
 
 class Cell(object):
-	def __init__(self,x,y,reachable):
+	def __init__(self,x,y,z,reachable):
 		self.reachable = reachable
 		self.x = x
 		self.y = y
+		self.z = z
 		self.parent = None
 		self.g = 0
 		self.h = 0
 		self.f = 0
 	
 class Astar(object):
-	def __init__(self,grid,start,end):
-		assert start[2]==end[2],"only doing 2d atm"
-		start=start[:2]
-		end=end[:2]
-		self.grid=grid[:,:,0] # only the top shelf for now
+	def __init__(self,grid,rng,start,end):
+		self.grid=grid
+		self.rng=rng
 		self.start=start
 		self.end=end
 
 		self.op = []
 		heapq.heapify(self.op)
 		self.cl = set()
-		self.cells = []
+		self.cells = {}
 
-		self.init_grid(start,end)
+		self.init_grid()
 		self.path=[]
 
-	def init_grid(self,start,end):
-		self.gridWidth,self.gridHeight=self.grid.shape
+	def init_grid(self):
+		self.gridWidth,self.gridHeight,self.gridDepth=self.grid.shape
 		for x in range(self.gridWidth):
 			for y in range(self.gridHeight):
-				reachable = self.grid[x,y]
-				self.cells.append(Cell(x, y, reachable))
-		self.start = self.get_cell(start[0],start[1])
-		self.end = self.get_cell(end[0],end[1])
+				for z in range(self.gridDepth):
+					reachable = self.grid[x,y,z]
+					self.cells[(x,y,z)]=Cell(x, y, z,reachable)
+		# this is necessary for digging in an uncreachable spot
+		self.cells[self.end].reachable=True
+		self.start = self.get_cell(*self.start)
+		self.end = self.get_cell(*self.end)
 
 	def get_heuristic(self, cell):
-		return 10 * (abs(cell.x - self.end.x) + abs(cell.y - self.end.y))
+		return abs(cell.x - self.end.x) + abs(cell.y - self.end.y)+abs(cell.z-self.end.z)
 
-	def get_cell(self, x, y):
-		return self.cells[x * self.gridHeight + y]
+	def get_cell(self, x, y,z):
+		return self.cells[(x,y,z)]
 
 	def get_adjacent_cells(self, cell):
 		cells = []
 		if cell.x < self.gridWidth-1:
-			cells.append(self.get_cell(cell.x+1, cell.y))
-		if cell.y > 0:
-			cells.append(self.get_cell(cell.x, cell.y-1))
+			cells.append(self.get_cell(cell.x+1, cell.y,cell.z))
 		if cell.x > 0:
-			cells.append(self.get_cell(cell.x-1, cell.y))
+			cells.append(self.get_cell(cell.x-1, cell.y,cell.z))
 		if cell.y < self.gridHeight-1:
-			cells.append(self.get_cell(cell.x, cell.y+1))
+			cells.append(self.get_cell(cell.x, cell.y+1,cell.z))
+		if cell.y > 0:
+			cells.append(self.get_cell(cell.x, cell.y-1,cell.z))
+		if cell.z < self.gridDepth-1:
+			cells.append(self.get_cell(cell.x, cell.y,cell.z+1))
+		if cell.z > 0:
+			cells.append(self.get_cell(cell.x, cell.y,cell.z-1))
+		self.rng.shuffle(cells)
 		return cells
 
 	def display_path(self):
 		cell = self.end
 		while cell.parent is not self.start:
 			cell = cell.parent
-			self.path.append((cell.x,cell.y))
+			self.path.append((cell.x,cell.y,cell.z))
 
 	def update_cell(self, adj, cell):
-		adj.g = cell.g + 10
+		adj.g = cell.g + 1
 		adj.h = self.get_heuristic(adj)
 		adj.parent = cell
 		adj.f = adj.h + adj.g
@@ -98,7 +104,7 @@ class Astar(object):
 						# if adj cell in open list, check if current path is
 						# better than the one previously found for this adj
 						# cell.
-						if c.g > cell.g + 10:
+						if c.g > cell.g + 1:
 							self.update_cell(c, cell)
 					else:
 						self.update_cell(c, cell)
@@ -106,6 +112,7 @@ class Astar(object):
 						heapq.heappush(self.op, (c.f, c))
 
 	def get_path(self):
+		if self.start==self.end:
+			return []
 		self.process()
-		print self.path
 		return self.path
