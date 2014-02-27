@@ -1,6 +1,6 @@
 CXX=g++
-CXXFLAGS=-Wall -O3
-AllegroFlags=`allegro-config --libs`
+CXXFLAGS=-O3# -Wall -Wextra
+SDLFLAGS=-lSDL -lSDL_image -lSDL_mixer -lSDL_ttf
 
 EXEC	= db
 SRC     = $(wildcard *.cpp)
@@ -11,7 +11,7 @@ all: $(SRC) $(EXEC)
 -include $(OBJ:.o=.d)
 
 $(EXEC): $(OBJ)
-	$(CXX) $(OBJ) $(CXXFLAGS) $(AllegroFlags) -o $@
+	$(CXX) $(OBJ) $(CXXFLAGS) $(SDLFLAGS) -o $@
 
 # compile and generate dependency info
 %.o: %.cpp

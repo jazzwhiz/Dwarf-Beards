@@ -446,29 +446,13 @@ class World(object):
 
 		pygame.key.set_repeat(200,50)
 
-		self.text("jazzwhiz games",90,WHITE,location=(0,50),centerx=True)
-		self.text("presents",45,WHITE,location=(0,150),centerx=True)
-		self.text("Dwarf Beards",90,WHITE,location=(0,300),centerx=True)
-		self.text("Press enter to begin",30,WHITE,location=(0,500),centerx=True)
-		self.text("v %s %s"%(__version__,copyright),15,DARK_GRAY,location=(650,585))
-		pygame.display.update()
-
-		titling=True
-		while titling:
-			self.events=pygame.event.get()
-			for event in self.events:
-				if event.type==KEYDOWN:
-					if event.key==K_ESCAPE:
-						pygame.event.post(pygame.event.Event(QUIT))
-					if event.key==K_RETURN:
-						titling=False
-				if event.type==pygame.QUIT:
-					pygame.quit()
-					sys.exit()
-			self.clock.tick(self.framerate)
-		self.screen.fill(self.bg_color)
-		pygame.display.update()
-		self.clock.tick(self.framerate)
+		msgs=[]
+		msgs.append(["jazzwhiz games",90,WHITE,(0,50),True])
+		msgs.append(["presents",45,WHITE,(0,150),True])
+		msgs.append(["Dwarf Beards",90,WHITE,(0,300),True])
+		msgs.append(["Press enter to begin",30,WHITE,(0,500),True])
+		msgs.append(["v %s %s"%(__version__,copyright),15,DARK_GRAY,(650,585)])
+		self.fs_text(msgs,K_RETURN)
 		
 		self.p("Reading names into memory...")
 		self.init_names()
@@ -514,9 +498,44 @@ class World(object):
 			lasts.append(line)
 		last.close()
 
-	def help(self):
+	def fs_text(self,msgs,return_key=None):
+		"""
+		msgs is an array of messages where each is: [string,size,color,(x,y),<centerx bool>]
+		esc or return key (in unicode or key form) gets out of the loop
+		"""
 		self.screen.fill(self.bg_color)
+		for msg in msgs:
+			centerx=False
+			if len(msg)==5:
+				centerx=msg[4]
+			self.text(msg[0],msg[1],msg[2],msg[3],centerx)
 
+		pygame.display.update()
+		self.clock.tick(self.framerate)
+
+		displaying=True
+		while displaying:
+			self.events=pygame.event.get()
+			for event in self.events:
+				if event.type==KEYDOWN:
+					if ((event.unicode==return_key or event.key==return_key) and return_key!=None) or event.key==K_ESCAPE:
+						displaying=False
+			self.clock.tick(self.framerate)
+
+	def side_text(self,msgs):
+		"""
+		does not provide the loop
+		msgs is an array of messages where each is: [string,size,color,(x,y)]
+		"""
+		self.screen.fill(self.bg_color)
+		for msg in msgs:
+			assert msg[2][0]>=600
+			self.text(msg[0],msg[1],msg[2],msg[3])
+
+		pygame.display.update()
+		self.clock.tick(self.framerate)
+		
+	def help(self):
 		fs=20
 		x_offset1=20
 		x_offset2=65
@@ -525,80 +544,83 @@ class World(object):
 		ls=f.get_linesize()
 
 		y=ls
-		self.text("esc",20,WHITE,(x_offset1,y))
-		self.text("- Exit",20,WHITE,(x_offset2,y))
-		y+=ls
-		self.text("h",20,WHITE,(x_offset1,y))
-		self.text("- Toggle this help screen",20,WHITE,(x_offset2,y))
-		y+=ls
-		self.text("l",20,WHITE,(x_offset1,y))
-		self.text("- Toggle log view",20,WHITE,(x_offset2,y))
-		y+=ls
-		self.text("space",20,WHITE,(x_offset1,y))
-		self.text("- Pause/Unpause",20,WHITE,(x_offset2,y))
-		y+=ls
-		self.text("n",20,WHITE,(x_offset1,y))
-		self.text("- Buy a new dwarf",20,WHITE,(x_offset2,y))
-		y+=ls
-		self.text("d",20,WHITE,(x_offset1,y))
-		self.text("- Dig (horizontal)",20,WHITE,(x_offset2,y))
-		y+=ls
-		self.text("m",20,WHITE,(x_offset1,y))
-		self.text("- Mine (down)",20,WHITE,(x_offset2,y))
-		y+=ls
-		self.text("<",20,WHITE,(x_offset1,y))
-		self.text("- Up one z level",20,WHITE,(x_offset2,y))
-		y+=ls
-		self.text(">",20,WHITE,(x_offset1,y))
-		self.text("- Down one z level",20,WHITE,(x_offset2,y))
 
+		msgs=[]
+		msgs.append(["esc",20,WHITE,(x_offset1,y)])
+		msgs.append(["- Exit",20,WHITE,(x_offset2,y)])
+		y+=ls
+		msgs.append(["h",20,WHITE,(x_offset1,y)])
+		msgs.append(["- Toggle this help screen",20,WHITE,(x_offset2,y)])
+		y+=ls
+		msgs.append(["l",20,WHITE,(x_offset1,y)])
+		msgs.append(["- Toggle log view",20,WHITE,(x_offset2,y)])
+		y+=ls
+		msgs.append(["space",20,WHITE,(x_offset1,y)])
+		msgs.append(["- Pause/Unpause",20,WHITE,(x_offset2,y)])
+		y+=ls
+		msgs.append(["n",20,WHITE,(x_offset1,y)])
+		msgs.append(["- Buy a new dwarf",20,WHITE,(x_offset2,y)])
+		y+=ls
+		msgs.append(["d",20,WHITE,(x_offset1,y)])
+		msgs.append(["- Dig (horizontal)",20,WHITE,(x_offset2,y)])
+		y+=ls
+		msgs.append(["m",20,WHITE,(x_offset1,y)])
+		msgs.append(["- Mine (down)",20,WHITE,(x_offset2,y)])
+		y+=ls
+		msgs.append(["<",20,WHITE,(x_offset1,y)])
+		msgs.append(["- Up one z level",20,WHITE,(x_offset2,y)])
+		y+=ls
+		msgs.append([">",20,WHITE,(x_offset1,y)])
+		msgs.append(["- Down one z level",20,WHITE,(x_offset2,y)])
 
-		pygame.display.update()
-		self.clock.tick(self.framerate)
-
-		helping=True
-		while helping:
-			self.events=pygame.event.get()
-			for event in self.events:
-				if event.type==KEYDOWN:
-					if event.key==K_ESCAPE:
-						pygame.event.post(pygame.event.Event(QUIT))
-					if event.unicode=="h":
-						helping=False
-				if event.type==pygame.QUIT:
-					pygame.quit()
-					sys.exit()
-			self.clock.tick(self.framerate)
+		self.fs_text(msgs,return_key="h")
 
 	def log(self):
-		self.screen.fill(self.bg_color)
-
 		y=10
 		i=len(self.log_msgs)
+		msgs=[]
 		while y<self.screen_size[1]-18 and i>0:
 			i-=1
 			if i==len(self.log_msgs)-1:
-				self.text(self.log_msgs[i],20,YELLOW,(10,y))
+				msgs.append([self.log_msgs[i],20,YELLOW,(10,y)])
 			else:
-				self.text(self.log_msgs[i],20,WHITE,(10,y))
+				msgs.append([self.log_msgs[i],20,WHITE,(10,y)])
 			y+=18
-		
-		pygame.display.update()
-		self.clock.tick(self.framerate)
 
-		logging=True
-		while logging:
-			self.events=pygame.event.get()
-			for event in self.events:
-				if event.type==KEYDOWN:
-					if event.key==K_ESCAPE:
-						pygame.event.post(pygame.event.Event(QUIT))
-					if event.unicode=="l":
-						logging=False
-				if event.type==pygame.QUIT:
-					pygame.quit()
-					sys.exit()
-			self.clock.tick(self.framerate)
+		self.fs_text(msgs,"l")
+
+	def save(self,fname):
+		import cPickle
+
+		save_file=open("Saves/%s"%fname,"wb")
+		
+		cPickle.dump(self.earth,save_file)
+		cPickle.dump(self.dwarf_list,save_file)
+		cPickle.dump(self.task_queue,save_file)
+		cPickle.dump(self.notification_index,save_file)
+		cPickle.dump(self.log_msgs,save_file)
+		cPickle.dump(self.focus,save_file)
+		cPickle.dump(self.level,save_file)
+
+		save_file.close()
+
+	def load(self,fname):
+		import cPickle
+
+		load_file=open("Saves/%s"%fname,"wb")
+
+		self.earth=cPickle.load(load_file)		
+		self.dwarf_list=cPickle.load(load_file)
+		self.task_queue=cPickle.load(load_file)
+		self.notification_index=cPickle.load(load_file)
+		self.log_msgs=cPickle.load(load_file)
+		self.focus=cPickle.load(load_file)
+		self.level=cPickle.load(load_file)
+
+		# want to come back paused regardless of how we left
+		self.paused=True
+
+		load_file.close()
 
 	def text(self,msg,size,color,location=(0,0),centerx=False,centery=False,bold=False):
 		f=pygame.font.SysFont(None,size,bold=bold)
@@ -611,6 +633,70 @@ class World(object):
 		if centery:
 			tRect.centery=self.screen.get_rect().centery
 		self.screen.blit(t,tRect)
+
+	def menu_selector(self,initial,total):
+		"""
+		returns the value for where the focus is, -1 means a selection was made
+		"""
+		self.events=pygame.event.get()
+		for event in self.events:
+			if event.type==KEYDOWN:
+				if event.key==K_UP:
+					return (initial-1)%total
+				if event.key==K_DOWN:
+					return (initial+1)%total
+				if event.key==K_RETURN:
+					return -1
+		return initial
+
+	def exit_screen(self):
+		msgs=[]
+
+		fs=20
+		f=pygame.font.SysFont(None,fs)
+		ls=f.get_linesize()
+
+		y=ls
+		msgs.append(["Return to game",fs,LIGHT_GRAY,(self.screen_size[0]/2,y),True])
+		y+=ls
+		msgs.append(["Save",fs,LIGHT_GRAY,(self.screen_size[0]/2,y),True])
+		y+=ls
+		msgs.append(["Quit",fs,LIGHT_GRAY,(self.screen_size[0]/2,y),True])
+
+		self.screen.fill(self.bg_color)
+
+		focus=0
+		exiting=True
+		while exiting:
+			for i in range(len(msgs)):
+				msg=msgs[i]
+				if i==focus:
+					msgs[i][2]=WHITE
+				else:
+					msgs[i][2]=LIGHT_GRAY
+				self.text(*msg)
+			new_focus=self.menu_selector(focus,len(msgs))
+
+			pygame.display.update()
+			self.clock.tick(self.framerate)
+
+			if new_focus==-1:
+				if focus==0:
+					exiting=False
+				if focus==1:
+					# todo: save
+					self.p("Saving to save00...")
+					self.save("save00")
+					self.p("Saved.")
+					new_focus=0
+				if focus==2:
+					exiting=False
+					self.quit()
+			focus=new_focus
+
+	def quit(self):
+		pygame.quit()
+		sys.exit()
 
 	def buy_dwarf(self,loc):
 		"""
@@ -731,7 +817,7 @@ class World(object):
 				if event.type==KEYDOWN:
 					# general game action
 					if event.key==K_ESCAPE:
-						pygame.event.post(pygame.event.Event(QUIT))
+						self.exit_screen()
 					if event.unicode=="h":
 						self.help()
 					if event.unicode=="l":
@@ -777,10 +863,8 @@ class World(object):
 
 					# move focus in the z direction
 					if event.unicode=="<":
-#						self.p("Moving out of the earth one level")
 						self.level=max(self.level-1,0)
 					if event.unicode==">":
-#						self.p("Moving into the earth one level")
 						self.level=min(self.level+1,self.earth_size[2]-1)
 
 					# move focus in the plane, modularly (I'm not a monster)
@@ -799,8 +883,7 @@ class World(object):
 					self.focus_loc=self.earth.earth[self.focus+(self.level,)]
 
 				if event.type==pygame.QUIT:
-					pygame.quit()
-					sys.exit()
+					self.quit()
 			if not self.paused:
 				self.update()
 
