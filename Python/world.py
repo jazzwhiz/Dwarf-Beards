@@ -18,6 +18,8 @@ rng.seed(seed)
 
 import jps,Astar
 
+data_dir = "../data/"
+
 # Names
 firsts=[]
 lasts=[]
@@ -482,7 +484,7 @@ class World(object):
 
 	def init_names(self,):
 		# set up names
-		first=open("first.txt","r")
+		first=open(data_dir + "first.txt","r")
 		for line in first.readlines():
 			line=line.replace("\n","")
 			if line=="":
@@ -490,7 +492,7 @@ class World(object):
 			firsts.append(line)
 		first.close()
 		
-		last=open("last.txt","r")
+		last=open(data_dir + "last.txt","r")
 		for line in last.readlines():
 			line=line.replace("\n","")
 			if line=="":

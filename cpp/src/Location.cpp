@@ -22,8 +22,8 @@ void Location::init()
 Soil::Soil()
 {
 	Location::init();
-	lid=0;
-	sprintf(name,"Soil");
-	diff=1;
-//	color=World::BROWN;
+	lid = 0;
+	name = "Soil";
+	diff = 1;
+//	color = World::BROWN;
 }

@@ -1,8 +1,8 @@
-#include <iostream>
-
 #include "World.h"
 
-int main(){
+int main()
+{
 	World world;
 	return 0;	
-}   
+}
+

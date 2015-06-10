@@ -22,15 +22,15 @@ class World
 		int frame_rate;
 
 		// set up stuff
-		std::vector<char*> firsts;
-		std::vector<char*> lasts;
+		std::vector<std::string> firsts;
+		std::vector<std::string> lasts;
 		int earth_size[3];
 		Earth earth;
 		
-		void p(const char* msg,int priority);
+		void p(const std::string msg,int priority);
 
-		const char* version;
-		const char* copyright;
+		std::string version;
+		std::string copyright;
 
 		// Some colors
 		// Grayscale
@@ -55,8 +55,8 @@ class World
 		bool running;
 		bool paused;
 
-		void text(const char* msg,int size,SDL_Color color,int x,int y,bool centerx);
-		char* random_name();
+		void text(const std::string msg,int size,SDL_Color color,int x,int y,bool centerx);
+		std::string random_name();
 
 	private:
 		void init_names();

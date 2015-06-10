@@ -36,19 +36,19 @@ World::World()
 
 	SDL_Init(SDL_INIT_EVERYTHING);
 	TTF_Init();
-	screen=SDL_SetVideoMode(screen_size[0],screen_size[1],32,SDL_SWSURFACE);
+	screen = SDL_SetVideoMode(screen_size[0],screen_size[1],32,SDL_SWSURFACE);
 
 	// rng
-	seed=1888;
+	seed = 1888;
 //	seed=time(NULL);
 	srand(seed);
 
 	// set up bools
-	running=true;
-	paused=false;
+	running = true;
+	paused = false;
 
-	version="0.02";
-	copyright="(c) 2014 Peter Denton";
+	version = "0.03";
+	copyright = "(c) 2014-2015 Peter Denton";
 
 	init_names();
 
@@ -62,16 +62,16 @@ World::World()
 	clean_up();
 }
 
-void World::text(const char* msg,int size,SDL_Color color,int x,int y,bool centerx)
+void World::text(const std::string msg,int size,SDL_Color color,int x,int y,bool centerx)
 {
 	TTF_Font *font=NULL;
 	font=TTF_OpenFont("Font/sfd/FreeSans.ttf",size);
-	message=TTF_RenderText_Solid(font,msg,color);
+	message = TTF_RenderText_Solid(font, msg.c_str(), color);
 
 	if (centerx)
 	{
 		int w;
-		TTF_SizeText(font,msg,&w,NULL);
+		TTF_SizeText(font, msg.c_str(), &w, NULL);
 		x=x-w/2;
 	}
 
@@ -97,17 +97,16 @@ void World::draw_world()
 void World::run()
 {
 	title();
+	draw_world();
 }
 void World::title()
 {
-	bool titling=true;
+	bool titling = true;
 
-	char tmp[100];
 	text("jazzwhiz games",30,WHITE,screen_size[0]/2,40,true);
 	text("presents",20,WHITE,screen_size[0]/2,100,true);
 	text("DWARF BEARDS",50,WHITE,screen_size[0]/2,300,true);
-	sprintf(tmp,"Version %s %s",version,copyright);
-	text(tmp,15,DARK_GRAY,567,580,false);
+	text("Version " + version + " " + copyright,15,DARK_GRAY,567,580,false);
 
 	while (titling)
 	{
@@ -141,7 +140,7 @@ void World::init_names()
 	std::ifstream lastfile("last.txt");
 
 	std::string tmp;
-	char* tmp2;
+	std::string tmp2;
 	if (firstfile.is_open())
 	{
 		while (firstfile)
@@ -166,11 +165,9 @@ void World::init_names()
 	lastfile.close();
 }
 
-char* World::random_name()
+std::string World::random_name()
 {
-	char* name=new char[50];
-	sprintf(name,"%s %s",firsts[rand()%firsts.size()],lasts[rand()%lasts.size()]);
-	return name;
+	return firsts[rand()%firsts.size()] + " " + lasts[rand()%lasts.size()];
 }
 
 void World::clean_up()
