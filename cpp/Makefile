@@ -1,5 +1,5 @@
 CC=g++
-CFlags=-c -Wall -O3 -MMD
+CFlags=-c -Wall -O3 -MMD -std=c++0x
 SDLFlags=-lSDL -lSDL_image -lSDL_mixer -lSDL_ttf
 Sources=$(wildcard src/*.cpp)
 Objects=$(addprefix obj/,$(notdir $(Sources:.cpp=.o)))

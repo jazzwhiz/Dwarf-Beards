@@ -6,9 +6,12 @@
 class Earth
 {
 	public:
-		Earth();
+		Earth() {};
 		
-		void init(int* size);
-//		location earth[50][50][11];
+		Location earth[50][50][11];
+		void init();
+		void fill_earth();
+		void make_vein(int lid, int size);
+		void make_cluster(int lid, int size);
 };
 #endif

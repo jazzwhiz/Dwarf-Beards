@@ -7,8 +7,9 @@
 #include "Dwarf.h"
 #include "Timer.h"
 #include "Earth.h"
+#include "rng.h"
 
-const int framerate=60;
+const int framerate = 60;
 Timer fps;
 SDL_Event e;
 SDL_Surface *screen;
@@ -28,6 +29,11 @@ const SDL_Color World::RED={255,0,0};
 const SDL_Color World::DARK_BLUE={0,0,100};
 const SDL_Color World::YELLOW={255,255,0};
 
+// initialize rng
+int seed = 1888;
+RNG rng = RNG(seed);
+//RNG rng = RNG();
+
 World::World()
 {
 	// screen parameter stuff
@@ -38,11 +44,6 @@ World::World()
 	TTF_Init();
 	screen = SDL_SetVideoMode(screen_size[0],screen_size[1],32,SDL_SWSURFACE);
 
-	// rng
-	seed = 1888;
-//	seed=time(NULL);
-	srand(seed);
-
 	// set up bools
 	running = true;
 	paused = false;
@@ -52,11 +53,8 @@ World::World()
 
 	init_names();
 
-	earth_size[0]=50;
-	earth_size[1]=50;
-	earth_size[2]=11;
 	earth=Earth();
-	earth.init(earth_size);
+	earth.init();
 
 	run();
 	clean_up();
@@ -92,7 +90,16 @@ void World::apply_surface(int x,int y,SDL_Surface* source,SDL_Surface* destinati
 }
 void World::draw_world()
 {
-	
+	draw_earth();
+	draw_sidebar();
+}
+void World::draw_earth()
+{
+
+}
+void World::draw_sidebar()
+{
+
 }
 void World::run()
 {

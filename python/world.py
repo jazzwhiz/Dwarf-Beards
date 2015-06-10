@@ -357,7 +357,7 @@ class location(object):
 	properties are:
 		diff:			difficulty to dig (0 = nothing, 1 = easy, 10 = quite hard)
 		color
-		objs:			list of objects contained, must be empty of lid!=0
+		objs:			list of objects contained, must be empty if lid!=0
 		empty,floor:	bools. If empty then can walk/climb. If floor then can put stuff on.
 	"""
 	lid_dict={

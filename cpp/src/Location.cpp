@@ -9,15 +9,11 @@ lids[0]=
 	(3,	"Gold",		3,	World::GOLD),
 	(4,	"Iron",		8,	World::GRAY)
 };*/
-struct lid_def tmp_lid={0,"Soil",1,World::BROWN};
-struct lid_def lids [5]={tmp_lid,tmp_lid,tmp_lid,tmp_lid,tmp_lid};
-
-//lids.lid=0;
 
 void Location::init()
 {
-	floor=false;
-	empty=false;
+	floor = false;
+	empty = false;
 }
 Soil::Soil()
 {
@@ -25,5 +21,59 @@ Soil::Soil()
 	lid = 0;
 	name = "Soil";
 	diff = 1;
-//	color = World::BROWN;
+	color = World::BROWN;
 }
+Bedrock::Bedrock()
+{
+	Location::init();
+	lid = 1;
+	name = "Bedrock";
+	diff = 6;
+	color = World::DARK_GRAY;
+}
+Silver::Silver()
+{
+	Location::init();
+	lid = 2;
+	name = "Silver";
+	diff = 4;
+	color = World::LIGHT_GRAY;
+}
+Gold::Gold()
+{
+	Location::init();
+	lid = 3;
+	name = "Gold";
+	diff = 3;
+	color = World::GOLD;
+}
+Iron::Iron()
+{
+	Location::init();
+	lid = 4;
+	name = "Iron";
+	diff = 8;
+	color = World::GRAY;
+}
+
+Location Location_from_lid(int lid)
+{
+	switch (lid)
+	{
+		case 0:
+			return Soil();
+		case 1:
+			return Bedrock();
+		case 2:
+			return Silver();
+		case 3:
+			return Gold();
+		case 4:
+			return Iron();
+		default:
+			return Bedrock(); // defaults to bedrock
+
+	}		
+}
+
+

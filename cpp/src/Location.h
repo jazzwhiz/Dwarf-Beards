@@ -4,14 +4,6 @@
 #include <string>
 #include "SDL/SDL.h"
 
-struct lid_def
-{
-	int lid;
-	std::string name;
-	int diff;
-	SDL_Color color;
-};
-
 class Location
 {
 	public:
@@ -25,12 +17,32 @@ class Location
 		void init();
 };
 
-class Soil:Location
+class Soil : public Location
 {
 	public:
 		Soil();
-		void init();
-		int asdf;
 };
+class Bedrock : public Location
+{
+	public:
+		Bedrock();
+};
+class Silver : public Location
+{
+	public:
+		Silver();
+};
+class Gold : public Location
+{
+	public:
+		Gold();
+};
+class Iron : public Location
+{
+	public:
+		Iron();
+};
+
+Location Location_from_lid(int lid);
 
 #endif

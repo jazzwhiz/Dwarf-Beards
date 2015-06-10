@@ -47,10 +47,14 @@ class World
 		static const SDL_Color DARK_BLUE;
 		static const SDL_Color YELLOW;
 
-	protected:
+	private:
 		void run();
+
+		void title();
+
 		void draw_world();
-		void draw_fs();
+		void draw_earth();
+		void draw_sidebar();
 
 		bool running;
 		bool paused;
@@ -58,12 +62,10 @@ class World
 		void text(const std::string msg,int size,SDL_Color color,int x,int y,bool centerx);
 		std::string random_name();
 
-	private:
 		void init_names();
 		int seed;
 		void apply_surface(int x,int y,SDL_Surface* source,SDL_Surface* destination);
 
-		void title();
 		void clean_up();
 
 };
