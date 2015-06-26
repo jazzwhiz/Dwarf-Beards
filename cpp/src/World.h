@@ -26,6 +26,8 @@ class World
 		std::vector<std::string> lasts;
 		int earth_size[3];
 		Earth earth;
+
+		int focus[3];
 		
 		void p(const std::string msg,int priority);
 
@@ -49,10 +51,12 @@ class World
 
 	private:
 		void run();
+		void run_main();
 
 		void title();
 
-		void draw_world();
+		void draw_main();
+		void draw_tile(int x, int y, Location location);
 		void draw_earth();
 		void draw_sidebar();
 
@@ -66,6 +70,7 @@ class World
 		int seed;
 		void apply_surface(int x,int y,SDL_Surface* source,SDL_Surface* destination);
 
+		void clear_screen();
 		void clean_up();
 
 };

@@ -8,6 +8,7 @@ class Earth
 	public:
 		Earth() {};
 		
+		int earth_size[3];
 		Location earth[50][50][11];
 		void init();
 		void fill_earth();

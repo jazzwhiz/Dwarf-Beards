@@ -6,14 +6,18 @@
 
 void Earth::init()
 {
+	earth_size[0] = 50;
+	earth_size[1] = 50;
+	earth_size[2] = 11;
+
 	int x, y, z;
-	for (x = 0; x < 50; x++)
+	for (x = 0; x < earth_size[0]; x++)
 	{
-		for (y = 0; y < 50; y++)
+		for (y = 0; y < earth_size[1]; y++)
 		{
 			earth[x][y][0] = Soil(); // top layer all soil, floor
 			earth[x][y][0].floor = true;
-			for (z = 1; z<11; z++)
+			for (z = 1; z < earth_size[2]; z++)
 			{
 				earth[x][y][z] = Bedrock(); // beneath starts out as bedrock
 			}
@@ -35,7 +39,8 @@ void Earth::make_vein(int lid, int size)
 {
 	std::cout << "Filling a vein of size " << size << " with " << Location_from_lid(lid).name << std::endl;
 
-	int current[3] = {rng.rand_int(49), rng.rand_int(49), rng.rand_int(1, 10)}; // don't start in soil
+	// don't start in soil
+	int current[3] = {rng.rand_int(earth_size[0] - 1), rng.rand_int(earth_size[1] - 1), rng.rand_int(1, earth_size[2] - 1)};
 	int direction[3] = {rng.rand_int(-2, 2), rng.rand_int(-2, 2), rng.rand_int(-2, 2)}; // vector direction to move sometimes
 	int direction_abs_sum = 0;
 	for (int i = 0; i < 3; i++)
@@ -78,17 +83,17 @@ void Earth::make_vein(int lid, int size)
 				current[i] += directions[direction_num][i];
 		}
 
-		if (current[0] >= 50)
+		if (current[0] >= earth_size[0])
 			current[0]--;
-		if (current[1] >= 50)
+		if (current[1] >= earth_size[1])
 			current[1]--;
-		if (current[2] >= 11)
+		if (current[2] >= earth_size[2])
 			current[2]--;
 		if (current[0] < 0)
 			current[0]++;
 		if (current[1] < 0)
 			current[1]++;
-		if (current[2] < 0)
+		if (current[2] < 1)
 			current[2]++;
 
 		if (earth[current[0]][current[1]][current[2]].lid != lid)
@@ -102,7 +107,8 @@ void Earth::make_cluster(int lid, int size)
 {
 	std::cout << "Filling a cluster of size " << size << " with " << Location_from_lid(lid).name << std::endl;
 
-	int current[3] = {rng.rand_int(49), rng.rand_int(49), rng.rand_int(1, 10)}; // don't start in soil
+	// don't start in soil
+	int current[3] = {rng.rand_int(earth_size[0] - 1), rng.rand_int(earth_size[1] - 1), rng.rand_int(1, earth_size[2] - 1)};
 
 	int N = 0; // number changed thus far
 
@@ -112,17 +118,17 @@ void Earth::make_cluster(int lid, int size)
 	{
 		current[rng.rand_int(2)] += 2* rng.rand_int(1) - 1; // either +1 or -1
 
-		if (current[0] >= 50)
+		if (current[0] >= earth_size[0])
 			current[0]--;
-		if (current[1] >= 50)
+		if (current[1] >= earth_size[1])
 			current[1]--;
-		if (current[2] >= 11)
+		if (current[2] >= earth_size[2])
 			current[2]--;
 		if (current[0] < 0)
 			current[0]++;
 		if (current[1] < 0)
 			current[1]++;
-		if (current[2] < 0)
+		if (current[2] < 1)
 			current[2]++;
 
 		if (earth[current[0]][current[1]][current[2]].lid != lid)
