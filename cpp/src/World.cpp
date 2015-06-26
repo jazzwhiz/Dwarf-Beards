@@ -14,6 +14,8 @@ Timer fps;
 SDL_Event e;
 SDL_Surface *screen;
 SDL_Surface *message;
+SDL_Surface *square_large;
+SDL_Surface *square_small;
 
 // Some colors
 // Grayscale
@@ -43,6 +45,12 @@ World::World()
 	SDL_Init(SDL_INIT_EVERYTHING);
 	TTF_Init();
 	screen = SDL_SetVideoMode(screen_size[0], screen_size[1], 32, SDL_SWSURFACE);
+
+SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
+
+	// bare tiles
+	square_large = SDL_CreateRGBSurface(0, 10, 10, 32, 0, 0, 0, 0);
+	square_small = SDL_CreateRGBSurface(0, 8, 8, 32, 0, 0, 0, 0);
 
 	// set up bools
 	running = true;
@@ -79,7 +87,6 @@ void World::text(const std::string msg, int size, SDL_Color color, int x, int y,
 
 	apply_surface(x, y, message, screen);
 	TTF_CloseFont(font);
-//	SDL_Flip(screen);
 }
 
 void World::apply_surface(int x, int y, SDL_Surface* source, SDL_Surface* destination)
@@ -98,22 +105,20 @@ void World::draw_main()
 {
 	draw_earth();
 	draw_sidebar();
+	SDL_Flip(screen);
 }
 
 void World::draw_tile(int x, int y, Location location)
 {
-	SDL_Surface *square;
 	if (location.floor)
 	{
-		square = SDL_CreateRGBSurface(0, 10, 10, 32, 0, 0, 0, 0);
-		SDL_FillRect(square, NULL, SDL_MapRGB(square->format, location.color.r, location.color.g, location.color.b));
-		apply_surface(12 * x + 1, 12 * y + 1, square, screen);
+		SDL_FillRect(square_small, NULL, SDL_MapRGB(square_small->format, location.color.r, location.color.g, location.color.b));
+		apply_surface(12 * x + 1, 12 * y + 1, square_small, screen);
 	}
 	else if (not location.empty)
 	{
-		square = SDL_CreateRGBSurface(0, 12, 12, 32, 0, 0, 0, 0);
-		SDL_FillRect(square, NULL, SDL_MapRGB(square->format, location.color.r, location.color.g, location.color.b));
-		apply_surface(12 * x, 12 * y, square, screen);
+		SDL_FillRect(square_large, NULL, SDL_MapRGB(square_large->format, location.color.r, location.color.g, location.color.b));
+		apply_surface(12 * x, 12 * y, square_large, screen);
 	}
 }
 
@@ -126,8 +131,6 @@ void World::draw_earth()
 			draw_tile(x, y, earth.earth[x][y][focus[2]]);
 		} // y
 	} // x
-
-	SDL_Flip(screen);
 }
 
 void World::draw_sidebar()
@@ -136,14 +139,61 @@ void World::draw_sidebar()
 }
 void World::run()
 {
+	fps.start();
+
+	title();
+	clear_screen();
+
 	run_main();
 }
 
 void World::run_main()
 {
-	title();
-	clear_screen();
-	draw_main();
+	int local_ticks;
+
+	while (running)
+	{
+		local_ticks = fps.get_ticks();
+
+		clear_screen();
+		draw_main();
+
+		SDL_WaitEvent(&e); 
+//		SDL_PollEvent(&e); 
+		if(e.type == SDL_QUIT)
+		{
+			running = false;
+			std::cout << "Quitting..." << std::endl;
+		}
+
+		if(e.type == SDL_KEYDOWN)
+		{
+			switch(e.key.keysym.sym)
+			{
+				case SDLK_ESCAPE: // exits the game (for now)
+					running = false;
+					break;
+				case SDLK_PERIOD: // ">" takes us down a z level into the earth
+					if (e.key.keysym.mod and KMOD_SHIFT)
+						focus[2]++;
+					break;
+				case SDLK_COMMA: // "<" takes us up a z level out of the earth
+					if (e.key.keysym.mod and KMOD_SHIFT)
+						focus[2]--;
+					break;
+				default:
+					break;
+			}
+		}
+
+		update();
+
+		if(fps.get_ticks() - local_ticks < 1000 / framerate)
+		{
+			SDL_Delay((1000 / framerate) - fps.get_ticks() + local_ticks);
+		}
+
+	}
 }
 
 void World::title()
@@ -155,12 +205,14 @@ void World::title()
 	text("DWARF BEARDS", 50, WHITE, screen_size[0] / 2, 300, true);
 	text("Version " + version + " " + copyright, 15, DARK_GRAY, 529, 580, false);
 
-	while (titling)
+	while (titling and running)
 	{
-		fps.start();
 		SDL_PollEvent(&e); 
 		if(e.type == SDL_QUIT)
+		{
 			running = false;
+			std::cout << "Quitting..." << std::endl;
+		}
 		if(e.type == SDL_KEYDOWN)
 		{
 			switch(e.key.keysym.sym)
@@ -216,6 +268,18 @@ std::string World::random_name()
 	return firsts[rand() % firsts.size()] + " " + lasts[rand() % lasts.size()];
 }
 
+void World::update()
+{
+	// focus: cyclic world
+	for (int i = 0; i < 3; i++)
+	{
+		if (focus[i] > earth.earth_size[i] - 1)
+			focus[i] = 0;
+		if (focus[i] < 0)
+			focus[i] = earth.earth_size[i] - 1;
+	}
+}
+
 void World::clear_screen()
 {
 	SDL_FillRect(screen, NULL, 0);
@@ -223,7 +287,12 @@ void World::clear_screen()
 
 void World::clean_up()
 {
+	std::cout << "Cleaning up..." << std::endl;
 	SDL_FreeSurface(message);
+	SDL_FreeSurface(screen);
+	SDL_FreeSurface(square_large);
+	SDL_FreeSurface(square_small);
+
 	TTF_Quit();
 	SDL_Quit();	
 }
