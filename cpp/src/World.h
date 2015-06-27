@@ -10,6 +10,7 @@
 #include "SDL/SDL_mixer.h"
 
 #include "Earth.h"
+#include "Dwarf.h"
 
 class World
 {
@@ -26,6 +27,8 @@ class World
 		std::vector<std::string> lasts;
 		int earth_size[3];
 		Earth earth;
+
+		std::vector<Dwarf> dwarves;
 
 		int focus[3];
 		
@@ -58,6 +61,8 @@ class World
 		void draw_main();
 		void draw_tile(int x, int y, Location location);
 		void draw_earth();
+		void draw_buildings();
+		void draw_dwarves();
 		void draw_sidebar();
 
 		bool running;

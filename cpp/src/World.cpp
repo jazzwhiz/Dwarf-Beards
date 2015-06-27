@@ -47,6 +47,7 @@ World::World()
 	screen = SDL_SetVideoMode(screen_size[0], screen_size[1], 32, SDL_SWSURFACE);
 
 SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
+std::cout << SDL_DEFAULT_REPEAT_DELAY << " " << SDL_DEFAULT_REPEAT_INTERVAL << std::endl;
 
 	// bare tiles
 	square_large = SDL_CreateRGBSurface(0, 10, 10, 32, 0, 0, 0, 0);
@@ -64,8 +65,8 @@ SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 	earth = Earth();
 	earth.init();
 
-	focus[0] = 25;
-	focus[1] = 25;
+	focus[0] = earth.earth_size[0] / 2;
+	focus[1] = earth.earth_size[1] / 2;
 	focus[2] = 0;
 
 	run();
@@ -76,7 +77,10 @@ void World::text(const std::string msg, int size, SDL_Color color, int x, int y,
 {
 	TTF_Font *font = NULL;
 	font = TTF_OpenFont("Font/sfd/FreeSans.ttf", size);
-	message = TTF_RenderText_Solid(font, msg.c_str(), color);
+
+//	message = TTF_RenderText_Solid(font, msg.c_str(), color);
+//	message = TTF_RenderText_Shaded(font, msg.c_str(), color, BLACK);
+	message = TTF_RenderText_Blended(font, msg.c_str(), color);
 
 	if (centerx)
 	{
@@ -105,6 +109,8 @@ void World::draw_main()
 {
 	draw_earth();
 	draw_sidebar();
+	draw_buildings();
+	draw_dwarves();
 	SDL_Flip(screen);
 }
 
@@ -133,10 +139,29 @@ void World::draw_earth()
 	} // x
 }
 
-void World::draw_sidebar()
+void World::draw_buildings()
 {
 
 }
+
+void World::draw_dwarves()
+{
+	for (uint i = 0; i < dwarves.size(); i++)
+	{
+		if (dwarves[i].loc[2] == focus[2])
+		{
+			text("@", 9, RED, 12 * dwarves[i].loc[0] + 5, 12 * dwarves[i].loc[1] - 3, true);
+		}
+	}
+}
+
+void World::draw_sidebar()
+{
+	std::string tmp;
+	tmp = "Location: " + std::to_string(focus[0]) + " " + std::to_string(focus[1]) + " " + std::to_string(focus[2]);
+	text(tmp, 15, RED, 680, 580, false);
+}
+
 void World::run()
 {
 	fps.start();
@@ -158,8 +183,8 @@ void World::run_main()
 		clear_screen();
 		draw_main();
 
-		SDL_WaitEvent(&e); 
-//		SDL_PollEvent(&e); 
+//		SDL_WaitEvent(&e);
+		SDL_PollEvent(&e); 
 		if(e.type == SDL_QUIT)
 		{
 			running = false;
@@ -180,6 +205,10 @@ void World::run_main()
 				case SDLK_COMMA: // "<" takes us up a z level out of the earth
 					if (e.key.keysym.mod and KMOD_SHIFT)
 						focus[2]--;
+					break;
+				case SDLK_n:
+					dwarves.push_back(Dwarf(random_name(), focus));
+					std::cout << "Added new dwarf #" << dwarves.size() << " named " << dwarves.back().name << std::endl;
 					break;
 				default:
 					break;
@@ -234,8 +263,8 @@ void World::title()
 
 void World::init_names()
 {
-	std::ifstream firstfile("first.txt");
-	std::ifstream lastfile("last.txt");
+	std::ifstream firstfile("../data/first.txt");
+	std::ifstream lastfile("../data/last.txt");
 
 	std::string tmp;
 	std::string tmp2;
@@ -243,7 +272,7 @@ void World::init_names()
 	{
 		while (firstfile)
 		{
-			getline(firstfile,tmp);
+			getline(firstfile, tmp);
 			if (tmp == "") continue;
 			tmp2 = strdup(tmp.c_str());
 			firsts.push_back(tmp2);
@@ -265,7 +294,7 @@ void World::init_names()
 
 std::string World::random_name()
 {
-	return firsts[rand() % firsts.size()] + " " + lasts[rand() % lasts.size()];
+	return firsts[rng.rand_int(firsts.size() - 1)] + " " + lasts[rng.rand_int(lasts.size() - 1)];
 }
 
 void World::update()
@@ -278,6 +307,10 @@ void World::update()
 		if (focus[i] < 0)
 			focus[i] = earth.earth_size[i] - 1;
 	}
+
+	// update dwarves
+	for (uint i = 0; i < dwarves.size(); i++)
+		dwarves[i].update();
 }
 
 void World::clear_screen()

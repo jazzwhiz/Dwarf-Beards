@@ -1,21 +1,24 @@
 #ifndef DWARF_H
 #define DWARF_H
 
+#include <string>
+
 #include "Task.h"
-#include "World.h"
 
 class Dwarf
 {
 	private:
 		int beard_inc;
 		int idle_time;
-		const char* tmp;
+
 	public:
-		Dwarf(const char* name,int loc[3]);
-		void update();
+		Dwarf(std::string name, int _loc[3]);
+		~Dwarf();
+		int loc[3];
+		std::string name;
 		int beard;
-		const char* name;
-		Task current;
+		void update();
+		Task* current;
 		
 		
 };

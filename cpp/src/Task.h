@@ -1,19 +1,30 @@
 #ifndef TASK_H
 #define TASK_H
+
+#include <string>
+
 class Task
 {
 	public:
-		const char* name;
-		void move();
+		virtual void update(int (*loc)[3]) = 0;
+		std::string name;
 };
-#endif
 
-#ifndef IDLE_H
-#define IDLE_H
-class Idle:Task
+class Idle : public Task
 {
 	public:
-		const char* name;
-		Idle(int earth,int start[3],int wait);
+		Idle(int idle_time);
+		Idle() {};
+
+		void update(int (*loc)[3]);
+		std::string name;
+	private:
+		bool initial_loc;
+
+		int idle_sign; // -1, +1
+		int idle_index; // 0, 1 - only idle horizontally
+
+		void step(int (*loc)[3]);
 };
+
 #endif
