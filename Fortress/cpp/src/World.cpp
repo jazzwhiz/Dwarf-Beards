@@ -263,8 +263,8 @@ void World::title()
 
 void World::init_names()
 {
-	std::ifstream firstfile("../data/first.txt");
-	std::ifstream lastfile("../data/last.txt");
+	std::ifstream firstfile("../../data/first.txt");
+	std::ifstream lastfile("../../data/last.txt");
 
 	std::string tmp;
 	std::string tmp2;

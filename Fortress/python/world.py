@@ -18,7 +18,7 @@ rng.seed(seed)
 
 import jps,Astar
 
-data_dir = "../data/"
+data_dir = "../../data/"
 
 # Names
 firsts=[]
