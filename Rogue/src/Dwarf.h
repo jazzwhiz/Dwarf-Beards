@@ -9,8 +9,9 @@ class Dwarf
 		Dwarf() {};
 		Dwarf(std::string name);
 		std::string name;
-		int beard;
-		int exp;
+		int beard, exp;
+		double thirst, sleepiness;
+
 };
 
 #endif

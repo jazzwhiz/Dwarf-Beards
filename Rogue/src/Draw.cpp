@@ -15,7 +15,7 @@
 namespace draw
 {
 
-const int framerate = 60;
+const int framerate = 32;
 const int screen_size[2] = {800, 600};
 Timer fps;
 SDL_Event e;

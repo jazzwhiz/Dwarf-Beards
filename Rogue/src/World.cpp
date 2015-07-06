@@ -6,6 +6,7 @@
 #include "World.h"
 #include "Dwarf.h"
 #include "Draw.h"
+#include "Monster.h"
 #include "rng.h"
 
 World::World()
@@ -20,6 +21,7 @@ World::World()
 	std::cout << "Welcome, " << player.name << std::endl;
 
 	draw::init(*this);
+	read_monsters(*this);
 	run();
 }
 
@@ -33,8 +35,8 @@ void World::init_names()
 	std::ifstream firstfile(data_dir + "Names/first.txt");
 	std::ifstream lastfile(data_dir + "Names/last.txt");
 
-	std::string tmp;
-	std::string tmp2;
+	std::string tmp, tmp2;
+
 	if (firstfile.is_open())
 	{
 		while (firstfile)
@@ -49,9 +51,9 @@ void World::init_names()
 	{
 		while (lastfile)
 		{
-			getline(lastfile,tmp);
+			getline(lastfile, tmp);
 			if (tmp == "") continue;
-			tmp2=strdup(tmp.c_str());
+			tmp2 = strdup(tmp.c_str());
 			lasts.push_back(tmp2);
 		}
 	}

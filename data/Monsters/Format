@@ -1,0 +1,20 @@
+BHP (base hp)
+HPU (hp up)
+BATK (base attack)
+ATKU (attack up)
+BMATK (base magic attack)
+MATKU (magic attack up)
+BDEF (base defense)
+DEFU (defense up)
+BMDEF (base magic defense)
+MDEFU (magic defense up)
+BEXP (base experience yield)
+EXPU (experience yield up)
+MINLVL (minimum level)
+MAXLVL (maximum level, -1 for no max)
+RAR (rarity)
+
+# future: item drops
+# notes:	base should be around an avg of 10
+#			ups should be 1-3
+#			rarity should be 1-100, 100 = common
