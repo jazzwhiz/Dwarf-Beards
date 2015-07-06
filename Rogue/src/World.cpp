@@ -7,6 +7,8 @@
 #include "Dwarf.h"
 #include "Draw.h"
 #include "Monster.h"
+#include "Earth.h"
+#include "Location.h"
 #include "rng.h"
 
 World::World()
@@ -14,20 +16,55 @@ World::World()
 	version = "0.01";
 	copyright = "(c) 2015 Peter Denton";
 
-	rng.seed(1888);
+	turn = 1;
+
+//	rng.seed(1888);
 	data_dir = "../data/";
 	init_names();
 	player = Dwarf(random_name());
 	std::cout << "Welcome, " << player.name << std::endl;
 
-	draw::init(*this);
-	read_monsters(*this);
+	location[0] = 0;
+	location[1] = 0;
+
+	draw::init(this);
+	read_monsters(this);
+	read_locations(this);
+
+	earth = new Earth(21, 21);
+	earth->locations[location[0]][location[1]].fog = false;
+
 	run();
 }
 
 void World::run()
 {
-	draw::title(*this);
+	bool playing = true;
+
+	playing = draw::title(this);
+	if (not playing)
+	{
+		quit();
+		return;
+	}
+
+	playing = draw::dwarf_profile(this);
+	if (not playing)
+	{
+		quit();
+		return;
+	}
+
+	playing = draw::earth(this);
+	if (not playing)
+	{
+		quit();
+		return;
+	}
+
+
+
+	quit();
 }
 
 void World::init_names()
@@ -66,8 +103,16 @@ std::string World::random_name()
 	return firsts[rng.rand_int(firsts.size() - 1)] + " " + lasts[rng.rand_int(lasts.size() - 1)];
 }
 
+World::~World()
+{
+	std::cout << "Deleting..." << std::endl;
+}
+
 void World::quit()
 {
 	std::cout << "Quitting..." << std::endl;
 	draw::clean_up();
+	delete earth;
+	delete this;
 }
+

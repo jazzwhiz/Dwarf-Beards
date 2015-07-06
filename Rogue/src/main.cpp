@@ -2,7 +2,7 @@
 
 int main()
 {
-	World w;
+	World* w = new World();
 	return 0;
 }
 

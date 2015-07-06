@@ -1,0 +1,5 @@
+char (single character to display)
+r (red in r, g, b)
+g
+b
+diff (difficulty to walk to, 1 is a plain, 10 is a mountain)

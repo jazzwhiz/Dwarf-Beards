@@ -3,6 +3,8 @@
 
 #include <string>
 
+extern std::string stat_names[5];
+
 class Dwarf
 {
 	public:
@@ -11,7 +13,10 @@ class Dwarf
 		std::string name;
 		int beard, exp;
 		double thirst, sleepiness;
+		int stats[5]; // maxhp, atk, matk, def, mdef
+		double hp;
 
+		void gain_exp(int _exp);
 };
 
 #endif

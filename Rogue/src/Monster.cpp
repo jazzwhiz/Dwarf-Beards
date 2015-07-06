@@ -7,6 +7,8 @@
 #include <iostream>
 
 #include "Monster.h"
+#include "World.h"
+
 #include "rng.h"
 
 std::vector<Monster_Base> Monster_Bases;
@@ -52,12 +54,13 @@ Monster::Monster(int lvl)
 	name = mb.name;
 	for (int i = 0; i < 6; i++)
 		stats[i] = mb.stats[2 * i] + lvl * stats[2 * i + 1];
+	hp = stats[0];
 }
 
-void read_monsters(World w)
+void read_monsters(World* w)
 {
 	std::string tmp, tmp2;
-	std::ifstream names(w.data_dir + "Monsters/Names");
+	std::ifstream names(w->data_dir + "Monsters/Names");
 	assert (names.is_open());
 
 	while (names)
@@ -70,9 +73,9 @@ void read_monsters(World w)
 	names.close();
 }
 
-void read_monster(World w, std::string name)
+void read_monster(World* w, std::string name)
 {
-	std::ifstream monster(w.data_dir + "Monsters/" + name);
+	std::ifstream monster(w->data_dir + "Monsters/" + name);
 	assert (monster.is_open());
 
 	int stats[15];

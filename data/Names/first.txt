@@ -1,6 +1,4 @@
 Gentle
-Sir
-Lady
 Sweet
 Tough
 Abber
@@ -24,3 +22,9 @@ Fimp
 Tromb
 Lumb
 Swiffle
+Prak
+Swof
+Bolg
+Trurs
+Smip
+Fuoult

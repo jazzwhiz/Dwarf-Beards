@@ -16,5 +16,5 @@ RAR (rarity)
 
 # future: item drops
 # notes:	base should be around an avg of 10
-#			ups should be 1-3
+#			ups should be 1-3, except HPU which should be around an avg of 5
 #			rarity should be 1-100, 100 = common

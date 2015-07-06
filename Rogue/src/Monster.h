@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "World.h"
+class World;
 
 class Monster_Base
 {
@@ -13,7 +13,6 @@ class Monster_Base
 		Monster_Base(std::string name, int stats[15]);
 		std::string name;
 		int stats[15];
-
 		bool can_be_lvl(int lvl);
 };
 
@@ -23,9 +22,10 @@ class Monster
 		Monster(int lvl);
 		std::string name;
 		int lvl, stats[6];
+		double hp;
 };
 
-void read_monsters(World w);
-void read_monster(World w, std::string file_name);
+void read_monsters(World* w);
+void read_monster(World* w, std::string name);
 
 #endif
