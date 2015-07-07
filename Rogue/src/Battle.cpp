@@ -9,10 +9,6 @@
 
 #include "rng.h"
 
-/*Monster_Battle::Monster_Battle()
-: monsters(std::vector<Monster>*), turn_number(0)
-{}*/
-
 Monster_Battle::Monster_Battle(std::vector<Monster>* _monsters)
 : monsters(*_monsters), turn_number(0)
 {
@@ -27,7 +23,7 @@ Monster_Battle::Monster_Battle(std::vector<Monster>* _monsters)
 	std::cout << std::endl;
 
 	// number of turns in an off screen monster battle
-	for (int i = 0; i < 3; i++)
+	while (turn_number < 3 and n_monsters > 1)
 		this->turn();
 
 	for (int i = 0; i < n_monsters; i++)
@@ -72,9 +68,7 @@ void Monster_Battle::fight(int attacker, int defender)
 		exp.erase(exp.begin() + defender);
 		n_monsters--;
 	}
-
 }
-
 
 Dwarf_Battle::Dwarf_Battle(Dwarf& player, std::vector<Monster>& monsters)
 : monsters(monsters), turn_number(0)

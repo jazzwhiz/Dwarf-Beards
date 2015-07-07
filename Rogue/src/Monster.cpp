@@ -75,9 +75,9 @@ void Monster::gain_exp(int _exp)
 {
 	std::cout << name << "(" << lvl << ") gains " << _exp << " exp" << std::endl;
 	exp += _exp;
-	while (exp >= 50 * lvl * lvl)
+	while (exp >= 50 * (lvl + 1) * (lvl + 1))
 	{
-		exp -= 50 * lvl * lvl;
+		exp -= 50 * (lvl + 1) * (lvl + 1);
 		lvl++;
 		stats[0] += 5;
 		for (int i = 1; i < 6; i++)

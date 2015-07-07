@@ -9,7 +9,6 @@ class Dwarf;
 class Monster_Battle
 {
 	public:
-//		Monster_Battle();
 		Monster_Battle(std::vector<Monster>* monsters);
 
 	private:
