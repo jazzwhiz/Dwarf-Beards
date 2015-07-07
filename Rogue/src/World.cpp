@@ -90,6 +90,5 @@ void World::quit()
 	std::cout << "Quitting..." << std::endl;
 	draw::clean_up();
 	delete earth;
-	delete this;
 }
 

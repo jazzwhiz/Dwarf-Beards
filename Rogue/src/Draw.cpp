@@ -58,8 +58,6 @@ void title(World* w)
 
 	if (wait_static())
 		dwarf_profile(w);
-	else
-		w->quit();
 }
 
 void dwarf_profile(World* w)
@@ -95,8 +93,6 @@ void dwarf_profile(World* w)
 
 	if (wait_static())
 		earth(w);
-	else
-		w->quit();
 }
 
 void earth(World* w)
@@ -149,8 +145,6 @@ void earth(World* w)
 	if (wait_static())
 		y++; // nothing
 		// next
-	else
-		w->quit();
 }
 
 // alignx: 0 - left, 1 - center, 2 - right
