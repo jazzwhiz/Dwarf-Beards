@@ -24,8 +24,8 @@ World::World()
 	player = Dwarf(random_name());
 	std::cout << "Welcome, " << player.name << std::endl;
 
-	location[0] = 0;
-	location[1] = 0;
+	location[0] = 10;
+	location[1] = 10;
 
 	draw::init(this);
 	read_monsters(this);
@@ -39,30 +39,7 @@ World::World()
 
 void World::run()
 {
-	bool playing = true;
-
-	playing = draw::title(this);
-	if (not playing)
-	{
-		quit();
-		return;
-	}
-
-	playing = draw::dwarf_profile(this);
-	if (not playing)
-	{
-		quit();
-		return;
-	}
-
-	playing = draw::earth(this);
-	if (not playing)
-	{
-		quit();
-		return;
-	}
-
-
+	draw::title(this);
 
 	quit();
 }

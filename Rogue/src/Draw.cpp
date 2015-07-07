@@ -19,11 +19,11 @@
 namespace draw
 {
 
-const int framerate = 30;
+const int framerate = 32;
 const int screen_size[2] = {800, 600};
-Timer fps;
-SDL_Surface *screen;
-SDL_Surface *message;
+SDL_Surface* screen;
+SDL_Surface* message;
+SDL_Surface* player_surface; // the at symbol
 
 // Some colors
 // Grayscale
@@ -43,21 +43,26 @@ const SDL_Color YELLOW = {255, 255, 0};
 // hp, atk, matk, def, mdef
 SDL_Color stat_colors[5] = {DARK_BLUE, RED, YELLOW, BROWN, WHITE};
 
-const int num_fonts = 5;
-const int font_sizes[num_fonts] = {12, 16, 24, 28, 72};
+const int num_fonts = 6;
+const int font_sizes[num_fonts] = {12, 14, 16, 24, 28, 72};
 TTF_Font* fonts[num_fonts];
 
-bool title(World* w)
+void title(World* w)
 {
+	clear_screen();
+
 	text("Dwarf Beards:", 72, LIGHT_GRAY, screen_size[0] / 2, 150, 1);
 	text("Rogue", 72, RED, screen_size[0] / 2, 252, 1);
 	text("Press enter to start", 16, LIGHT_GRAY, screen_size[0] / 2, 570, 1);
 	text("Version " + w->version + " " + w->copyright, 12, DARK_GRAY, screen_size[0], screen_size[1] - 16, 2);
 
-	return wait_static();
+	if (wait_static())
+		dwarf_profile(w);
+	else
+		w->quit();
 }
 
-bool dwarf_profile(World* w)
+void dwarf_profile(World* w)
 {
 	clear_screen();
 
@@ -88,10 +93,13 @@ bool dwarf_profile(World* w)
 
 	// todo: equipment
 
-	return wait_static();
+	if (wait_static())
+		earth(w);
+	else
+		w->quit();
 }
 
-bool earth(World* w)
+void earth(World* w)
 {
 	clear_screen();
 
@@ -102,24 +110,47 @@ bool earth(World* w)
 		{
 			if (not w->earth->locations[x][y].fog)
 			{
-				apply_surface(28 * x + 8, 28 * y, w->earth->locations[x][y].to_surface(), screen);
+				if (x == w->location[0] and y == w->location[1])
+					apply_surface(28 * x + 6, 28 * y, player_surface, screen);
+				else
+					apply_surface(28 * x + 20 - w->earth->locations[x][y].width / 2, 28 * y, w->earth->locations[x][y].to_surface(), screen);
 			}
 		} // y
 	} // x
 
 	// sidebar x > 600
-	int x = 610;
+	int x = 605;
 	int y = 20;
-	text(w->player.name, 16, LIGHT_GRAY, x, y, 0);
-	y += 30;
+	std::string tmp;
 
+	// turn number
 	text("Turn: " + std::to_string(w->turn), 16, LIGHT_GRAY, x, y, 0);
 	y += 30;
 
-	text("Location: [" + std::to_string(w->location[0]) + "," + std::to_string(w->location[1]) + "]", 16, LIGHT_GRAY, x, y, 0);
+	// player info
+	text(w->player.name, 16, LIGHT_GRAY, x, y, 0);
+	y += 22;
+
+	text(stat_names[0] + ": " + std::to_string((int)w->player.hp) + "/" + std::to_string(w->player.stats[0]), 14, LIGHT_GRAY, x + 10, y, 0);
+	y += 22;
+
+	text("Thirst: " + std::to_string((int)(100 * w->player.thirst)) + "%", 14, LIGHT_GRAY, x + 10, y, 0);
+	y += 22;
+
+	text("Sleepiness: " + std::to_string((int)(100 * w->player.sleepiness)) + "%", 14, LIGHT_GRAY, x + 10, y, 0);
 	y += 30;
 
-	return wait_static();
+	// location info
+	text("Location: (" + std::to_string(w->location[0] - 10) + "," + std::to_string(w->location[1] - 10) + ")", 16, LIGHT_GRAY, x, y, 0);
+	y += 22;
+
+	text(w->earth->locations[w->location[0]][w->location[1]].name, 14, Location_Base_Colors[w->earth->locations[w->location[0]][w->location[1]].index], x + 10, y, 0);
+
+	if (wait_static())
+		y++; // nothing
+		// next
+	else
+		w->quit();
 }
 
 // alignx: 0 - left, 1 - center, 2 - right
@@ -138,12 +169,12 @@ void text(const std::string msg, int size, SDL_Color color, int x, int y, int al
 
 	if (alignx > 0)
 	{
-		int w;
-		TTF_SizeText(fonts[index], msg.c_str(), &w, NULL);
+		int width;
+		TTF_SizeText(fonts[index], msg.c_str(), &width, NULL);
 		if (alignx == 1)
-			x -= w / 2;
+			x -= width / 2;
 		if (alignx == 2)
-			x -= w;
+			x -= width;
 	}
 
 	apply_surface(x, y, message, screen);
@@ -169,23 +200,28 @@ void clear_screen()
 bool wait_static()
 {
 	bool waiting = true;
+	bool playing = true;
 	SDL_Event e;
+	Timer fps;
 	while (waiting)
 	{
-		SDL_PollEvent(&e);
-		if (e.type == SDL_QUIT or e.key.keysym.sym == SDLK_ESCAPE)
+		fps.start();
+		while(SDL_PollEvent(&e));
 		{
-			return false;
-		}
-		if (e.type == SDL_KEYDOWN)
-		{
-			switch (e.key.keysym.sym)
+			if (e.type == SDL_QUIT or e.key.keysym.sym == SDLK_ESCAPE)
 			{
-				case SDLK_RETURN:
-					waiting = false;
-					break;
-				default:
-					break;
+				waiting = false;
+				playing = false;
+			}
+			if (e.type == SDL_KEYDOWN)
+			{
+				switch (e.key.keysym.sym)
+				{
+					case SDLK_RETURN:
+						waiting = false;
+					default:
+						break;
+				}
 			}
 		}
 		SDL_Flip(screen);
@@ -193,19 +229,50 @@ bool wait_static()
 		{
 			SDL_Delay((1000 / framerate) - fps.get_ticks());
 		}
-	} // showing loop
+	} // waiting loop
+	return playing;
+}
+
+bool clear_events()
+{
+	SDL_Event e;
+	while (SDL_PollEvent(&e));
+	{
+		std::cout << "  ..." << &e.key.keysym.sym << std::endl;
+		if (e.type == SDL_QUIT or e.key.keysym.sym == SDLK_ESCAPE)
+		{
+			return false;
+		}
+	}
+
 	return true;
+
 }
 
 void init(World* w)
 {
+	// start all sdl stuff
 	SDL_Init(SDL_INIT_EVERYTHING);
 	TTF_Init();
 	screen = SDL_SetVideoMode(screen_size[0], screen_size[1], 32, SDL_SWSURFACE);
 
+	// set up window
+	SDL_WM_SetCaption("Dwarf Beards: Rogue", "");
+
+	// initialize fonts
 	std::string font_file = w->data_dir + "Font/sfd/FreeSans.ttf";
 	for (int i = 0; i < num_fonts; i++)
 		fonts[i] = TTF_OpenFont(font_file.c_str(), font_sizes[i]);
+
+	// initialize player surface
+	int i = 0;
+	while (draw::font_sizes[i] != 28)
+	{
+		i++;
+		assert (i < draw::num_fonts);
+	}
+	
+	player_surface = TTF_RenderText_Blended(fonts[i], "@", RED);
 
 }
 

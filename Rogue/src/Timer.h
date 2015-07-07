@@ -1,36 +1,35 @@
-#ifndef TIMER_H
-#define TIMER_H
-
-#include "SDL/SDL.h"
+#ifndef Timer_H
+#define Timer_H
 
 class Timer
 {
 	private:
-		//The clock time when the timer started
+		// The clock time when the timer started
 		int startTicks;
 	
-		//The ticks stored when the timer was paused
+		// The ticks stored when the timer was paused
 		int pausedTicks;
 	
-		//The timer status
+		// The timer status
 		bool paused;
 		bool started;
 	
 	public:
-		//Initializes variables
+		// Initializes variables
 		Timer();
 	
-		//The various clock actions
+		// The various clock actions
 		void start();
 		void stop();
 		void pause();
 		void unpause();
 	
-		//Gets the timer's time
+		// Gets the timer's time
 		int get_ticks();
 	
-		//Checks the status of the timer
+		// Checks the status of the timer
 		bool is_started();
 		bool is_paused();	
 };
+
 #endif

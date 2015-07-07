@@ -16,14 +16,10 @@ extern const int num_fonts;
 extern const int font_sizes[];
 extern TTF_Font* fonts[];
 
-// colors
-extern const SDL_Color WHITE;
-
-
 // finished products
-bool title(World* w);
-bool dwarf_profile(World* w);
-bool earth(World* w);
+void title(World* w);
+void dwarf_profile(World* w);
+void earth(World* w);
 
 // text and surfaces
 void text(const std::string msg, int size, SDL_Color color, int x, int y, int alignx);
@@ -32,6 +28,7 @@ void clear_screen();
 
 // keyboard interfaces
 bool wait_static(); // enter progresses, otherwise, no action
+bool clear_events(); // clears event queue, but catches sigquit and escape
 
 // large scale structure
 void init(World* w);

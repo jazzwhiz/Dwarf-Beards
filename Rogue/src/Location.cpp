@@ -14,22 +14,25 @@
 #include "rng.h"
 
 std::vector<Location_Base> Location_Bases;
+std::vector<SDL_Color> Location_Base_Colors;
 std::vector<SDL_Surface*> Location_Base_Surfaces;
 
-Location_Base::Location_Base(std::string name, std::string letter, Uint8 _rgb[3], int diff)
-: name(name), letter(letter), diff(diff)
+Location_Base::Location_Base(std::string name, std::string letter, Uint8 _rgb[3], int width, int diff)
+: name(name), letter(letter), width(width), diff(diff)
 {
 	for (int i = 0; i < 3; i++)
 		rgb[i] = _rgb[i];
 }
 
 Location::Location()
-: fog(true) // can't see by default
+: fog(false) // can't see by default
 {
 	index = rng.rand_int(Location_Bases.size() - 1);
 	name = Location_Bases[index].name;
 	diff = Location_Bases[index].diff;
+	width = Location_Bases[index].width;
 }
+
 
 SDL_Surface* Location::to_surface()
 {
@@ -70,9 +73,6 @@ void read_location(World* w, std::string name)
 	location >> diff;
 	location.close();
 
-	Location_Base lb(name, letter, rgb, diff);
-	Location_Bases.push_back(lb);
-
 	int i = 0;
 	while (draw::font_sizes[i] != 28)
 	{
@@ -82,7 +82,13 @@ void read_location(World* w, std::string name)
 
 	SDL_Color color = {rgb[0], rgb[1], rgb[2]};
 
-
+	Location_Base_Colors.push_back(color);
 	Location_Base_Surfaces.push_back(TTF_RenderText_Blended(draw::fonts[i], letter.c_str(), color));
+
+	int width;
+	TTF_SizeText(draw::fonts[i], letter.c_str(), &width, NULL);
+
+	Location_Base lb(name, letter, rgb, width, diff);
+	Location_Bases.push_back(lb);
 }
 
