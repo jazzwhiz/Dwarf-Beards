@@ -46,7 +46,7 @@ void Location::update()
 	if (monsters.size() > 1)
 	{
 		if (rng.rand_int(15) < evil)
-			Battle battle(&monsters);
+			Monster_Battle battle(&monsters);
 	}
 
 	// todo: move monsters?

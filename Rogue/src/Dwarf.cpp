@@ -10,7 +10,8 @@ Dwarf::Dwarf(std::string name)
 : name(name), beard(1), exp(0), thirst(0), sleepiness(0)
 {
 
-	for (int i = 0; i < 5; i++)
+	stats[0] = 50;
+	for (int i = 1; i < 5; i++)
 		stats[i] = 10;
 	hp = stats[0];
 }

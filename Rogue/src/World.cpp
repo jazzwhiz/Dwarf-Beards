@@ -24,14 +24,15 @@ World::World()
 	player = Dwarf(random_name());
 	std::cout << "Welcome, " << player.name << std::endl;
 
-	location[0] = 10;
-	location[1] = 10;
-
 	draw::init(this);
 	read_monsters(this);
 	read_locations(this);
 
-	earth = new Earth(21, 21);
+	earth = new Earth(5, 5);
+
+	location[0] = earth->earth_size[0] / 2;
+	location[1] = earth->earth_size[1] / 2;
+
 	earth->locations[location[0]][location[1]].fog = false;
 
 	run();

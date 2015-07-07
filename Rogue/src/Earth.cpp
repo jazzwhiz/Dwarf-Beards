@@ -19,7 +19,7 @@ Earth::Earth(int max_x, int max_y)
 		locations[x] = new Location[earth_size[1]];
 	allocated = true;
 
-	for (int i = 0; i < 10; i++) // how much initial history
+	for (int i = 0; i < 100; i++) // how much initial history
 		update();
 }
 
