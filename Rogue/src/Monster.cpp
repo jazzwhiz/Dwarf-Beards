@@ -3,6 +3,7 @@
 #include <cstring>
 #include <assert.h>
 #include <vector>
+#include <algorithm>
 
 #include <iostream>
 
@@ -26,7 +27,7 @@ bool Monster_Base::can_be_lvl(int lvl)
 }
 
 Monster::Monster(int lvl)
-: lvl(lvl)
+: lvl(lvl), exp(0)
 {
 	int rarity_sum = 0;
 	for (uint i = 0; i < Monster_Bases.size(); i++)
@@ -50,11 +51,17 @@ Monster::Monster(int lvl)
 		}
 	}
 
-
 	name = mb.name;
 	for (int i = 0; i < 6; i++)
 		stats[i] = mb.stats[2 * i] + lvl * stats[2 * i + 1];
 	hp = stats[0];
+}
+
+void Monster::heal()
+{
+	hp += 2;
+	if (hp > stats[0])
+		hp = stats[0];
 }
 
 void read_monsters(World* w)

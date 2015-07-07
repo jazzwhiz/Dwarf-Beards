@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include "Monster.h"
+
 class World;
 
 extern std::vector<SDL_Color> Location_Base_Colors;
@@ -26,7 +28,10 @@ class Location
 		std::string name;
 		bool fog;
 		SDL_Surface* to_surface();
-		int diff, index, width;
+		int diff, index, width, evil;
+		std::vector<Monster> monsters;
+
+		void update();
 
 		// objects
 };

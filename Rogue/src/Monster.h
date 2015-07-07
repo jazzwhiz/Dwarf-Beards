@@ -21,8 +21,9 @@ class Monster
 	public:
 		Monster(int lvl);
 		std::string name;
-		int lvl, stats[6];
+		int lvl, exp, stats[6]; // maxhp, 
 		double hp;
+		void heal();
 };
 
 void read_monsters(World* w);

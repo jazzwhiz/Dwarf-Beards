@@ -10,6 +10,8 @@
 #include "Location.h"
 #include "World.h"
 #include "Draw.h"
+#include "Monster.h"
+#include "Battle.h"
 
 #include "rng.h"
 
@@ -31,8 +33,24 @@ Location::Location()
 	name = Location_Bases[index].name;
 	diff = Location_Bases[index].diff;
 	width = Location_Bases[index].width;
+	evil = rng.rand_int(10);
 }
 
+void Location::update()
+{
+	// spawn new monsters
+	if (rng.rand_int(50) < evil)
+		monsters.push_back(Monster(0));
+
+	// todo: monsters battle
+	if (monsters.size() > 1)
+	{
+		if (rng.rand_int(15) < evil)
+			Battle battle(&monsters);
+	}
+	for (uint i = 0; i < monsters.size(); i++)
+		monsters[i].heal();
+}
 
 SDL_Surface* Location::to_surface()
 {

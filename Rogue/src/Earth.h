@@ -14,6 +14,7 @@ class Earth
 
 		int earth_size[2];
 		Location** locations;
+		void update();
 };
 
 #endif
