@@ -42,7 +42,6 @@ void Earth::update()
 		{
 			locations[x][y].update();
 		} // y
-
 	} // x
 }
 

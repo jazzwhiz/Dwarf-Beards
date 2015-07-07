@@ -42,14 +42,20 @@ void Location::update()
 	if (rng.rand_int(50) < evil)
 		monsters.push_back(Monster(0));
 
-	// todo: monsters battle
+	// monsters battle
 	if (monsters.size() > 1)
 	{
 		if (rng.rand_int(15) < evil)
 			Battle battle(&monsters);
 	}
+
+	// todo: move monsters?
+
+	// heal monsters
 	for (uint i = 0; i < monsters.size(); i++)
 		monsters[i].heal();
+
+	// todo: grow trees, plants, update weather
 }
 
 SDL_Surface* Location::to_surface()
