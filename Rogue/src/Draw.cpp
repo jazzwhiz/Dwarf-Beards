@@ -47,7 +47,7 @@ const int num_fonts = 6;
 const int font_sizes[num_fonts] = {12, 14, 16, 24, 28, 72};
 TTF_Font* fonts[num_fonts];
 
-void title(World* w)
+bool title(World* w)
 {
 	clear_screen();
 
@@ -56,8 +56,7 @@ void title(World* w)
 	text("Press enter to start", 16, LIGHT_GRAY, screen_size[0] / 2, 570, 1);
 	text("Version " + w->version + " " + w->copyright, 12, DARK_GRAY, screen_size[0], screen_size[1] - 16, 2);
 
-	if (wait_static())
-		dwarf_profile(w);
+	return wait_static();
 }
 
 void dwarf_profile(World* w)
@@ -72,7 +71,7 @@ void dwarf_profile(World* w)
 	y += 30;
 
 	tmp = "Beard length: " + std::to_string(w->player.beard);
-	tmp += "   Exp: " + std::to_string((int)(100 * (double)(w->player.exp) / (50 * w->player.beard * w->player.beard))) + "%";
+	tmp += "   Exp: " + std::to_string((int)(100 * (double)(w->player.exp) / (50 * (w->player.beard + 1) * (w->player.beard + 1)))) + "%";
 	text(tmp, 16, LIGHT_GRAY, screen_size[0] / 2, y, 1);
 	y += 30;
 
@@ -124,7 +123,7 @@ void earth(World* w)
 	y += 30;
 
 	// player info
-	text(w->player.name, 16, LIGHT_GRAY, x, y, 0);
+	text(w->player.name + " (" + std::to_string(w->player.beard) + ")", 16, LIGHT_GRAY, x, y, 0);
 	y += 22;
 
 	text(stat_names[0] + ": " + std::to_string((int)w->player.hp) + "/" + std::to_string(w->player.stats[0]), 14, LIGHT_GRAY, x + 10, y, 0);

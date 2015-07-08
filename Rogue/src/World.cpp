@@ -15,20 +15,25 @@ World::World()
 {
 	version = "0.01";
 	copyright = "(c) 2015 Peter Denton";
+	data_dir = "../data/";
+	draw::init(this);
+
+	if (not draw::title(this))
+		return;
 
 	turn = 1;
 
 //	rng.seed(1888);
-	data_dir = "../data/";
 	init_names();
 	player = Dwarf(random_name());
 	std::cout << "Welcome, " << player.name << std::endl;
 
-	draw::init(this);
 	read_monsters(this);
 	read_locations(this);
 
-	earth = new Earth(5, 5);
+	std::cout << "Generating earth's history..." << std::endl;
+	earth = new Earth(21, 21);
+	std::cout << "History generated." << std::endl;
 
 	location[0] = earth->earth_size[0] / 2;
 	location[1] = earth->earth_size[1] / 2;
@@ -40,18 +45,17 @@ World::World()
 
 void World::run()
 {
-	draw::title(this);
+	draw::dwarf_profile(this);
 
 	quit();
 }
 
 void World::init_names()
 {
-	std::ifstream firstfile(data_dir + "Names/first.txt");
-	std::ifstream lastfile(data_dir + "Names/last.txt");
 
 	std::string tmp, tmp2;
 
+	std::ifstream firstfile(data_dir + "Names/first.txt");
 	if (firstfile.is_open())
 	{
 		while (firstfile)
@@ -62,6 +66,9 @@ void World::init_names()
 			firsts.push_back(tmp2);
 		}
 	}
+	firstfile.close();
+
+	std::ifstream lastfile(data_dir + "Names/last.txt");
 	if (lastfile.is_open())
 	{
 		while (lastfile)
@@ -72,7 +79,6 @@ void World::init_names()
 			lasts.push_back(tmp2);
 		}
 	}
-	firstfile.close();
 	lastfile.close();
 }
 
@@ -83,13 +89,18 @@ std::string World::random_name()
 
 World::~World()
 {
-	std::cout << "Deleting..." << std::endl;
+	std::cout << "Deleting world..." << std::endl;
+	draw::clean_up();
 }
 
 void World::quit()
 {
 	std::cout << "Quitting..." << std::endl;
-	draw::clean_up();
+
+	// output data
+	earth->live_monster_data();
+	dead_monster_data();
+
 	delete earth;
 }
 

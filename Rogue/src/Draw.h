@@ -17,7 +17,7 @@ extern const int font_sizes[];
 extern TTF_Font* fonts[];
 
 // finished products
-void title(World* w);
+bool title(World* w);
 void dwarf_profile(World* w);
 void earth(World* w);
 

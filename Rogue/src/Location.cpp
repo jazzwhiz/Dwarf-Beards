@@ -40,12 +40,12 @@ void Location::update()
 {
 	// spawn new monsters
 	if (rng.rand_int(50) < evil)
-		monsters.push_back(Monster(0));
+		monsters.push_back(Monster(rng.rand_int(evil)));
 
 	// monsters battle
 	if (monsters.size() > 1)
 	{
-		if (rng.rand_int(15) < evil)
+		if (rng.rand_int(20) < evil)
 			Monster_Battle battle(&monsters);
 	}
 

@@ -15,6 +15,7 @@ class Earth
 		int earth_size[2];
 		Location** locations;
 		void update();
+		void live_monster_data();
 };
 
 #endif

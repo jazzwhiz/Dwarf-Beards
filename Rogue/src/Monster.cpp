@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <vector>
 #include <algorithm>
+#include <stdexcept>
 
 #include <iostream>
 
@@ -17,6 +18,7 @@ std::vector<Monster_Base> Monster_Bases;
 Monster_Base::Monster_Base(std::string name, int _base_stats[15])
 : name(name)
 {
+	deaths.push_back(0);
 	for (int i = 0; i < 15; i++)
 		base_stats[i] = _base_stats[i];
 }
@@ -38,7 +40,8 @@ Monster::Monster(int lvl)
 
 	Monster_Base mb;
 	int rarity_rng = rng.rand_int(1, rarity_sum);
-	for (uint i = 0; i < Monster_Bases.size(); i++)
+	uint i;
+	for (i = 0; i < Monster_Bases.size(); i++)
 	{
 		if (Monster_Bases[i].can_be_lvl(lvl))
 		{
@@ -50,6 +53,7 @@ Monster::Monster(int lvl)
 			rarity_rng -= Monster_Bases[i].base_stats[14];
 		}
 	}
+	index = i;
 
 	name = mb.name;
 	for (int i = 0; i < 15; i++)
@@ -67,13 +71,17 @@ Monster::~Monster()
 bool Monster::damage(double damage)
 {
 	hp -= damage;
-//	std::cout << name << " took " << damage << " damage has " << hp << "/" << stats[0] << " hp" << std::endl;
+	if (hp <= 0)
+	{
+		while (lvl >= (int)Monster_Bases[index].deaths.size())
+			Monster_Bases[index].deaths.push_back(0);
+		Monster_Bases[index].deaths[lvl]++;
+	}
 	return (hp > 0);
 }
 
 void Monster::gain_exp(int _exp)
 {
-	std::cout << name << "(" << lvl << ") gains " << _exp << " exp" << std::endl;
 	exp += _exp;
 	while (exp >= 50 * (lvl + 1) * (lvl + 1))
 	{
@@ -125,5 +133,22 @@ void read_monster(World* w, std::string name)
 
 	Monster_Base mb(name, base_stats);
 	Monster_Bases.push_back(mb);
+}
+
+void dead_monster_data()
+{
+	std::cout << "Dead Monsters" << std::endl;
+	int total;
+	for (uint i = 0; i < Monster_Bases.size(); i++)
+	{
+		total = 0;
+		std::cout << "  " << Monster_Bases[i].name << std::endl;
+		for (uint j = 0; j < Monster_Bases[i].deaths.size(); j++)
+		{
+			std::cout << "    " << j << " " << Monster_Bases[i].deaths[j] << std::endl;
+			total += Monster_Bases[i].deaths[j];
+		}
+		std::cout << "    " << total << std::endl;
+	}
 }
 
