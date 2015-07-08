@@ -13,7 +13,7 @@
 
 World::World()
 {
-	version = "0.01";
+	version = "0.02";
 	copyright = "(c) 2015 Peter Denton";
 	data_dir = "../data/";
 	draw::init(this);

@@ -6,6 +6,8 @@
 #include "Earth.h"
 #include "Location.h"
 
+#include "Progress.h"
+
 Earth::Earth()
 {
 	allocated = false;
@@ -21,8 +23,13 @@ Earth::Earth(int max_x, int max_y)
 		locations[x] = new Location[earth_size[1]];
 	allocated = true;
 
-	for (int i = 0; i < 10000; i++) // how much initial history
+	Progress_Bar pbar;
+	int history_size = 1000;
+	for (int i = 0; i < history_size; i++) // how much initial history
+	{
 		update();
+		pbar.update((double)i / history_size);
+	}
 }
 
 Earth::~Earth()

@@ -4,6 +4,7 @@
 #include <vector>
 #include <fstream>
 #include <assert.h>
+#include <math.h>
 
 #include <iostream>
 
@@ -39,13 +40,13 @@ Location::Location()
 void Location::update()
 {
 	// spawn new monsters
-	if (rng.rand_int(50) < evil)
+	if (rng.rand() <= pow((evil + 1) / 11., 0.6) and rng.rand() < 0.005) // powers closer to 0.1 favors lower levels, closer 0.9 favors a flatter distribution
 		monsters.push_back(Monster(rng.rand_int(evil)));
 
 	// monsters battle
 	if (monsters.size() > 1)
 	{
-		if (rng.rand_int(20) < evil)
+		if (rng.rand_int(20) < evil) // 0 evil = no battles, 10 evil = 50% battles
 			Monster_Battle battle(&monsters);
 	}
 
