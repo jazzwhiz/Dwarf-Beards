@@ -18,8 +18,8 @@ extern TTF_Font* fonts[];
 
 // finished products
 bool title(World* w);
-void dwarf_profile(World* w);
-void earth(World* w);
+bool dwarf_profile(World* w);
+int earth(World* w);
 
 // text and surfaces
 void text(const std::string msg, int size, SDL_Color color, int x, int y, int alignx);
@@ -28,6 +28,7 @@ void clear_screen();
 
 // keyboard interfaces
 bool wait_static(); // enter progresses, otherwise, no action
+int wait_earth(); // main gameplay screen, captures keystrokes
 bool clear_events(); // clears event queue, but catches sigquit and escape
 
 // large scale structure

@@ -45,9 +45,45 @@ World::World()
 
 void World::run()
 {
-	draw::dwarf_profile(this);
+	if (not draw::dwarf_profile(this))
+	{
+		quit();
+		return;
+	}
 
-	quit();
+	int r;
+	bool playing = true;
+	while (playing)
+	{
+		r = draw::earth(this);
+		switch (r)
+		{
+			case 0:
+				playing = false;
+				quit();
+				return;
+			case 1: // goto char screen
+				break;
+			case 2: // left
+				location[0]--;
+				location[0] = std::max(location[0], 0);
+				break;
+			case 3: // right
+				location[0]++;
+				location[0] = std::min(location[0], earth->earth_size[0] - 1);
+				break;
+			case 4: // up
+				location[1]--;
+				location[1] = std::max(location[1], 0);
+				break;
+			case 5: // down
+				location[1]++;
+				location[1] = std::min(location[1], earth->earth_size[1] - 1);
+				break;
+		}
+	}
+
+		quit();
 }
 
 void World::init_names()
@@ -98,8 +134,8 @@ void World::quit()
 	std::cout << "Quitting..." << std::endl;
 
 	// output data
-	earth->live_monster_data();
-	dead_monster_data();
+//	earth->live_monster_data();
+//	dead_monster_data();
 
 	delete earth;
 }

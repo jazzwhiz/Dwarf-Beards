@@ -35,7 +35,9 @@ Monster::Monster(int lvl)
 	for (uint i = 0; i < Monster_Bases.size(); i++)
 	{
 		if (Monster_Bases[i].can_be_lvl(lvl))
+		{
 			rarity_sum += Monster_Bases[i].base_stats[14];
+		}
 	}
 
 	Monster_Base mb;

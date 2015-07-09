@@ -24,7 +24,7 @@ Earth::Earth(int max_x, int max_y)
 	allocated = true;
 
 	Progress_Bar pbar;
-	int history_size = 1000;
+	int history_size = 100;//00;
 	for (int i = 0; i < history_size; i++) // how much initial history
 	{
 		update();

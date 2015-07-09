@@ -59,7 +59,7 @@ bool title(World* w)
 	return wait_static();
 }
 
-void dwarf_profile(World* w)
+bool dwarf_profile(World* w)
 {
 	clear_screen();
 
@@ -90,11 +90,10 @@ void dwarf_profile(World* w)
 
 	// todo: equipment
 
-	if (wait_static())
-		earth(w);
+	return wait_static();
 }
 
-void earth(World* w)
+int earth(World* w)
 {
 	clear_screen();
 
@@ -141,9 +140,7 @@ void earth(World* w)
 
 	text(w->earth->locations[w->location[0]][w->location[1]].name, 14, Location_Base_Colors[w->earth->locations[w->location[0]][w->location[1]].index], x + 10, y, 0);
 
-	if (wait_static())
-		y++; // nothing
-		// next
+	return wait_earth();
 }
 
 // alignx: 0 - left, 1 - center, 2 - right
@@ -224,6 +221,63 @@ bool wait_static()
 		}
 	} // waiting loop
 	return playing;
+}
+
+// 0: quit
+// 1: character screen
+// 2-5: L, R, U, D
+int wait_earth()
+{
+	bool waiting = true;
+	int ret;
+	SDL_Event e;
+	Timer fps;
+	while (waiting)
+	{
+		fps.start();
+		while(SDL_PollEvent(&e));
+		{
+			if (e.type == SDL_QUIT or e.key.keysym.sym == SDLK_ESCAPE)
+			{
+				waiting = false;
+				ret = 0;
+			}
+			if (e.type == SDL_KEYDOWN)
+			{
+				switch (e.key.keysym.sym)
+				{
+					case SDLK_c:
+						waiting = false;
+						ret = 1;
+						break;
+					case SDLK_LEFT:
+						waiting = false;
+						ret = 2;
+						break;
+					case SDLK_RIGHT:
+						waiting = false;
+						ret = 3;
+						break;
+					case SDLK_UP:
+						waiting = false;
+						ret = 4;
+						break;
+					case SDLK_DOWN:
+						waiting = false;
+						ret = 5;
+						break;
+					default:
+						break;
+				}
+			}
+		}
+		SDL_Flip(screen);
+		if (fps.get_ticks() < 1000 / framerate)
+		{
+			SDL_Delay((1000 / framerate) - fps.get_ticks());
+		}
+	} // waiting loop
+	return ret;
 }
 
 bool clear_events()
