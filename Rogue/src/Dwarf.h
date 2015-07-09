@@ -11,7 +11,7 @@ class Dwarf
 		Dwarf() {};
 		Dwarf(std::string name);
 		std::string name;
-		int beard, exp;
+		int beard, exp, gold;
 		double thirst, sleepiness;
 		int stats[5]; // maxhp, atk, matk, def, mdef
 		double hp;

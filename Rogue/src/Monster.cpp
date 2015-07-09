@@ -97,7 +97,7 @@ void Monster::gain_exp(int _exp)
 
 void Monster::heal()
 {
-	hp += 2;
+//	hp += 2;
 	if (hp > stats[0])
 		hp = stats[0];
 }

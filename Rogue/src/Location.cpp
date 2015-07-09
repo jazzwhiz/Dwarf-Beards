@@ -20,6 +20,9 @@ std::vector<Location_Base> Location_Bases;
 std::vector<SDL_Color> Location_Base_Colors;
 std::vector<SDL_Surface*> Location_Base_Surfaces;
 
+const std::string evil_strings[11] =
+	{"Serene", "Calm", "Simple", "Active", "Busy", "Happening", "Worrisome", "Scary", "Frightful", "Overrun", "Evil"};
+
 Location_Base::Location_Base(std::string name, std::string letter, Uint8 _rgb[3], int width, int diff)
 : name(name), letter(letter), width(width), diff(diff)
 {
@@ -37,10 +40,15 @@ Location::Location()
 	evil = rng.rand_int(10);
 }
 
+const std::string Location::evil_str()
+{
+	return evil_strings[evil];
+}
+
 void Location::update()
 {
 	// spawn new monsters
-	if (rng.rand() <= pow((evil + 1) / 11., 0.6) and rng.rand() < 0.003) // powers closer to 0.1 favors lower levels, closer 0.9 favors a flatter distribution
+	if (rng.rand() <= pow(evil / 11., 0.6) and rng.rand() < 0.003) // powers closer to 0.1 favors lower levels, closer 0.9 favors a flatter distribution
 		monsters.push_back(Monster(rng.rand_int(evil)));
 
 	// monsters battle

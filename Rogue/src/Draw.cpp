@@ -81,6 +81,9 @@ bool dwarf_profile(World* w)
 	text(tmp, 16, stat_colors[0], screen_size[0] / 2, y, 1);
 	y += 30;
 
+	text("Gold: " + std::to_string(w->player.gold), 16, YELLOW, screen_size[0] / 2, y, 1);
+	y += 30;
+
 	for (int i = 1; i < 5; i++)
 	{
 		tmp = stat_names[i] + ": " + std::to_string(w->player.stats[i]);
@@ -115,7 +118,6 @@ int earth(World* w)
 	// sidebar x > 600
 	int x = 605;
 	int y = 20;
-	std::string tmp;
 
 	// turn number
 	text("Turn: " + std::to_string(w->turn), 16, LIGHT_GRAY, x, y, 0);
@@ -139,6 +141,27 @@ int earth(World* w)
 	y += 22;
 
 	text(w->earth->locations[w->location[0]][w->location[1]].name, 14, Location_Base_Colors[w->earth->locations[w->location[0]][w->location[1]].index], x + 10, y, 0);
+	y += 18;
+
+	text(w->earth->locations[w->location[0]][w->location[1]].evil_str(), 14, LIGHT_GRAY, x + 10, y, 0);
+	y += 22;
+
+	int n_monsters = w->earth->locations[w->location[0]][w->location[1]].monsters.size();
+	if (n_monsters >= 1)
+	{
+		text("Monsters:", 16, LIGHT_GRAY, x, y, 0);
+		y += 22;
+	}
+	for (int i = 0; i < n_monsters; i++)
+	{
+		std::string tmp;
+		tmp = "  " + w->earth->locations[w->location[0]][w->location[1]].monsters[i].name + "(";
+		tmp += std::to_string(w->earth->locations[w->location[0]][w->location[1]].monsters[i].lvl) + ") ";
+		tmp += std::to_string((int)w->earth->locations[w->location[0]][w->location[1]].monsters[i].hp) + "/";
+		tmp += std::to_string(w->earth->locations[w->location[0]][w->location[1]].monsters[i].stats[0]);
+		text(tmp, 14, LIGHT_GRAY, x + 10, y, 0);
+		y += 18;
+	}
 
 	return wait_earth();
 }
@@ -229,7 +252,7 @@ bool wait_static()
 int wait_earth()
 {
 	bool waiting = true;
-	int ret;
+	int ret = 0;
 	SDL_Event e;
 	Timer fps;
 	while (waiting)

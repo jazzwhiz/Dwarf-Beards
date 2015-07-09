@@ -31,6 +31,7 @@ class Location
 		int diff, index, width, evil;
 		std::vector<Monster> monsters;
 
+		const std::string evil_str(); // getter, in text form
 		void update();
 
 		// objects
