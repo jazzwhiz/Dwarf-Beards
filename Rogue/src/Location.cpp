@@ -31,7 +31,7 @@ Location_Base::Location_Base(std::string name, std::string letter, Uint8 _rgb[3]
 }
 
 Location::Location()
-: fog(false) // can't see by default
+: fog(true) // can't see by default
 {
 	index = rng.rand_int(Location_Bases.size() - 1);
 	name = Location_Bases[index].name;
@@ -48,7 +48,8 @@ const std::string Location::evil_str()
 void Location::update()
 {
 	// spawn new monsters
-	if (rng.rand() <= pow(evil / 11., 0.6) and rng.rand() < 0.003) // powers closer to 0.1 favors lower levels, closer 0.9 favors a flatter distribution
+	// powers closer to 0.1 favors lower levels, closer 0.9 favors a flatter distribution
+	if (rng.rand() <= pow(evil / 10., 0.6) and rng.rand() < 0.1)
 		monsters.push_back(Monster(rng.rand_int(evil)));
 
 	// monsters battle

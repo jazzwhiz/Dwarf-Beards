@@ -10,6 +10,8 @@ class World;
 
 namespace draw
 {
+// colors
+extern const SDL_Color YELLOW;
 
 // fonts
 extern const int num_fonts;

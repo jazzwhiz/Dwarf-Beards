@@ -33,6 +33,7 @@ class World
 		void move(int direction);
 		void wait();
 		void update();
+		void die();
 };
 
 

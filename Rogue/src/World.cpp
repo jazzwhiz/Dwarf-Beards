@@ -9,6 +9,7 @@
 #include "Monster.h"
 #include "Earth.h"
 #include "Location.h"
+#include "Camp.h"
 #include "rng.h"
 
 World::World()
@@ -30,6 +31,8 @@ World::World()
 
 	read_monsters(this);
 	read_locations(this);
+
+	camp_init();
 
 	std::cout << "Generating earth's history..." << std::endl;
 	earth = new Earth(21, 21);
@@ -125,6 +128,8 @@ void World::move(int direction)
 			location[1]++;
 			break;
 	}
+
+	earth->locations[location[0]][location[1]].fog = false;
 
 	// update sleepiness, and off screen monsters
 	player.sleepiness += earth->locations[location[0]][location[1]].diff / 100.;

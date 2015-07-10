@@ -18,7 +18,7 @@ Monster_Battle::Monster_Battle(std::vector<Monster>* _monsters)
 		exp.push_back(0);
 
 	// number of turns in an off screen monster battle
-	while (turn_number < 3 and n_monsters > 1)
+	while (turn_number < 5 and n_monsters > 1)
 		this->turn();
 
 	for (int i = 0; i < n_monsters; i++)

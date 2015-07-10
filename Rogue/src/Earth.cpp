@@ -5,6 +5,7 @@
 
 #include "Earth.h"
 #include "Location.h"
+#include "Camp.h"
 
 #include "Progress.h"
 
@@ -24,7 +25,10 @@ Earth::Earth(int max_x, int max_y)
 	allocated = true;
 
 	Progress_Bar pbar;
-	int history_size = 100;//00;
+	int history_size = 10;//000;
+
+	locations[max_x / 2][max_y / 2].evil = 0;
+	locations[max_x / 2][max_y / 2].camp = Camp();
 	for (int i = 0; i < history_size; i++) // how much initial history
 	{
 		update();

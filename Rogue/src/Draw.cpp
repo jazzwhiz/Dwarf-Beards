@@ -23,7 +23,7 @@ const int framerate = 32;
 const int screen_size[2] = {800, 600};
 SDL_Surface* screen;
 SDL_Surface* message;
-SDL_Surface* player_surface; // the at symbol
+SDL_Surface* player_surface; // D
 
 // Some colors
 // Grayscale
@@ -41,7 +41,7 @@ const SDL_Color DARK_BLUE = {0, 0, 100};
 const SDL_Color YELLOW = {255, 255, 0};
 
 // hp, atk, matk, def, mdef
-SDL_Color stat_colors[5] = {DARK_BLUE, RED, YELLOW, BROWN, WHITE};
+SDL_Color stat_colors[5] = {BLUE, RED, YELLOW, BROWN, WHITE};
 
 const int num_fonts = 6;
 const int font_sizes[num_fonts] = {12, 14, 16, 24, 28, 72};
@@ -108,7 +108,13 @@ int earth(World* w)
 			if (not w->earth->locations[x][y].fog)
 			{
 				if (x == w->location[0] and y == w->location[1])
-					apply_surface(28 * x + 6, 28 * y, player_surface, screen);
+					apply_surface(28 * x + 11, 28 * y, player_surface, screen);
+				else if (w->earth->locations[x][y].camp.index != 0)
+				{
+					apply_surface(28 * x + 20 - w->earth->locations[x][y].camp.width / 2, 28 * y,
+									w->earth->locations[x][y].camp.to_surface(), screen);
+//					std::cout << w->earth->locations[x][y].camp.width << std::endl;
+				}
 				else
 					apply_surface(28 * x + 20 - w->earth->locations[x][y].width / 2, 28 * y, w->earth->locations[x][y].to_surface(), screen);
 			}
@@ -134,6 +140,9 @@ int earth(World* w)
 	y += 18;
 
 	text("Sleepiness: " + std::to_string((int)(100 * w->player.sleepiness)) + "%", 14, LIGHT_GRAY, x + 10, y, 0);
+	y += 18;
+
+	text("Gold: " + std::to_string(w->player.gold), 14, YELLOW, x + 10, y, 0);
 	y += 25;
 
 	// location info
@@ -146,6 +155,21 @@ int earth(World* w)
 	text(w->earth->locations[w->location[0]][w->location[1]].evil_str(), 14, LIGHT_GRAY, x + 10, y, 0);
 	y += 25;
 
+	// buildings
+	int n_buildings = w->earth->locations[w->location[0]][w->location[1]].camp.buildings.size();
+	if (n_buildings > 0)
+	{
+		text(w->earth->locations[w->location[0]][w->location[1]].camp.name, 16, LIGHT_GRAY, x, y, 0);
+		y += 22;
+		for (int i = 0; i < n_buildings; i++)
+		{
+			text(w->earth->locations[w->location[0]][w->location[1]].camp.buildings[i].name, 14, LIGHT_GRAY, x + 10, y, 0);
+			y += 18;
+		}
+	}
+	y += 7;
+
+	// monster info
 	int n_monsters = w->earth->locations[w->location[0]][w->location[1]].monsters.size();
 	if (n_monsters >= 1)
 	{
@@ -346,7 +370,7 @@ void init(World* w)
 		assert (i < draw::num_fonts);
 	}
 	
-	player_surface = TTF_RenderText_Blended(fonts[i], "@", RED);
+	player_surface = TTF_RenderText_Blended(fonts[i], "D", RED);
 
 }
 

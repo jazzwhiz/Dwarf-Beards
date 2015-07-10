@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "Monster.h"
+#include "Camp.h"
 
 class World;
 
@@ -30,6 +31,7 @@ class Location
 		SDL_Surface* to_surface();
 		int diff, index, width, evil;
 		std::vector<Monster> monsters;
+		Camp_Base camp;
 
 		const std::string evil_str(); // getter, in text form
 		void update();

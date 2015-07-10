@@ -16,6 +16,7 @@ class Dwarf
 		int stats[5]; // maxhp, atk, matk, def, mdef
 		double hp;
 
+		void damage(int damage);
 		void gain_exp(int _exp);
 		void update();
 };

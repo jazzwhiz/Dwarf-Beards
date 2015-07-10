@@ -16,6 +16,16 @@ Dwarf::Dwarf(std::string name)
 	hp = stats[0];
 }
 
+void Dwarf::damage(int damage)
+{
+	hp -= damage;
+	if (hp <= 0)
+	{
+		hp = 0;
+		// todo: die
+	}
+}
+
 void Dwarf::gain_exp(int _exp)
 {
 	exp += _exp;
@@ -35,8 +45,7 @@ void Dwarf::update()
 	if (thirst >= 1)
 	{
 		thirst = 1;
-		hp -= 3;
-		// todo: check for death
+		damage(3);
 	}
 }
 
