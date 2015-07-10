@@ -32,6 +32,7 @@ class World
 		void run();
 		void move(int direction);
 		void wait();
+		void update();
 };
 
 

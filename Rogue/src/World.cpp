@@ -129,14 +129,20 @@ void World::move(int direction)
 	// update sleepiness, and off screen monsters
 	player.sleepiness += earth->locations[location[0]][location[1]].diff / 100.;
 	player.sleepiness = std::min(player.sleepiness, 1.);
-	earth->update();
+	update();
 }
 
 void World::wait()
 {
 	player.sleepiness -= 0.05;
 	player.sleepiness = std::max(player.sleepiness, 0.);
+	update();
+}
+
+void World::update()
+{
 	earth->update();
+	player.update();
 }
 
 void World::init_names()

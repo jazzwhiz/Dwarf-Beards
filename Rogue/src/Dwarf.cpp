@@ -29,3 +29,14 @@ void Dwarf::gain_exp(int _exp)
 	}
 }
 
+void Dwarf::update()
+{
+	thirst += 0.05;
+	if (thirst >= 1)
+	{
+		thirst = 1;
+		hp -= 3;
+		// todo: check for death
+	}
+}
+

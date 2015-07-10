@@ -17,6 +17,7 @@ class Dwarf
 		double hp;
 
 		void gain_exp(int _exp);
+		void update();
 };
 
 #endif
