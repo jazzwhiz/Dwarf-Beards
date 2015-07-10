@@ -59,7 +59,7 @@ bool title(World* w)
 	return wait_static();
 }
 
-bool dwarf_profile(World* w)
+int dwarf_profile(World* w)
 {
 	clear_screen();
 
@@ -93,7 +93,7 @@ bool dwarf_profile(World* w)
 
 	// todo: equipment
 
-	return wait_static();
+	return wait_static() ? 2 : 0;
 }
 
 int earth(World* w)
@@ -121,20 +121,20 @@ int earth(World* w)
 
 	// turn number
 	text("Turn: " + std::to_string(w->turn), 16, LIGHT_GRAY, x, y, 0);
-	y += 30;
+	y += 25;
 
 	// player info
 	text(w->player.name + " (" + std::to_string(w->player.beard) + ")", 16, LIGHT_GRAY, x, y, 0);
 	y += 22;
 
 	text(stat_names[0] + ": " + std::to_string((int)w->player.hp) + "/" + std::to_string(w->player.stats[0]), 14, LIGHT_GRAY, x + 10, y, 0);
-	y += 22;
+	y += 18;
 
 	text("Thirst: " + std::to_string((int)(100 * w->player.thirst)) + "%", 14, LIGHT_GRAY, x + 10, y, 0);
-	y += 22;
+	y += 18;
 
 	text("Sleepiness: " + std::to_string((int)(100 * w->player.sleepiness)) + "%", 14, LIGHT_GRAY, x + 10, y, 0);
-	y += 30;
+	y += 25;
 
 	// location info
 	text("Location: (" + std::to_string(w->location[0] - 10) + "," + std::to_string(w->location[1] - 10) + ")", 16, LIGHT_GRAY, x, y, 0);
@@ -144,7 +144,7 @@ int earth(World* w)
 	y += 18;
 
 	text(w->earth->locations[w->location[0]][w->location[1]].evil_str(), 14, LIGHT_GRAY, x + 10, y, 0);
-	y += 22;
+	y += 25;
 
 	int n_monsters = w->earth->locations[w->location[0]][w->location[1]].monsters.size();
 	if (n_monsters >= 1)
@@ -275,19 +275,23 @@ int wait_earth()
 						break;
 					case SDLK_LEFT:
 						waiting = false;
-						ret = 2;
+						ret = 3;
 						break;
 					case SDLK_RIGHT:
 						waiting = false;
-						ret = 3;
+						ret = 4;
 						break;
 					case SDLK_UP:
 						waiting = false;
-						ret = 4;
+						ret = 5;
 						break;
 					case SDLK_DOWN:
 						waiting = false;
-						ret = 5;
+						ret = 6;
+						break;
+					case SDLK_w:
+						waiting = false;
+						ret = 7;
 						break;
 					default:
 						break;

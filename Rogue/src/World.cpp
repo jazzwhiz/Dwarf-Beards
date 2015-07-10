@@ -13,7 +13,7 @@
 
 World::World()
 {
-	version = "0.02";
+	version = "0.03";
 	copyright = "(c) 2015 Peter Denton";
 	data_dir = "../data/";
 	draw::init(this);
@@ -45,45 +45,98 @@ World::World()
 
 void World::run()
 {
-	if (not draw::dwarf_profile(this))
-	{
-		quit();
-		return;
-	}
-
-	int r;
+	int status = 1;
 	bool playing = true;
+
 	while (playing)
 	{
-		r = draw::earth(this);
-		switch (r)
+		switch (status)
 		{
-			case 0:
+			case 0: // quit
 				playing = false;
-				quit();
-				return;
-			case 1: // goto char screen
 				break;
-			case 2: // left
-				location[0]--;
-				location[0] = std::max(location[0], 0);
+			case 1: // dwarf profile
+				status = draw::dwarf_profile(this);
 				break;
-			case 3: // right
-				location[0]++;
-				location[0] = std::min(location[0], earth->earth_size[0] - 1);
+			case 2: // main screen
+				status = draw::earth(this);
 				break;
-			case 4: // up
-				location[1]--;
-				location[1] = std::max(location[1], 0);
+			case 3: // left
+			case 4: // right
+			case 5: // up
+			case 6: // down
+				move(status);
+				status = 2; // go to main screen
 				break;
-			case 5: // down
-				location[1]++;
-				location[1] = std::min(location[1], earth->earth_size[1] - 1);
+			case 7: // wait
+				wait();
+				status = 2;
+				break;
+			default:
 				break;
 		}
 	}
 
-		quit();
+	quit();
+}
+
+void World::move(int direction)
+{
+	// check if going off map
+	bool off_map = false;
+	switch (direction)
+	{
+		case 3:
+			off_map = location[0] == 0;
+			break;
+		case 4:
+			off_map = location[0] == earth->earth_size[0] - 1;
+			break;
+		case 5:
+			off_map = location[1] == 0;
+			break;
+		case 6:
+			off_map = location[1] == earth->earth_size[1] - 1;
+			break;
+	}
+	if (off_map)
+		return;
+
+	// if asleep, wait instead of move
+	if (player.sleepiness >= 1)
+	{
+		wait();
+		return;
+	}
+
+	// move location
+	switch (direction)
+	{
+		case 3: // left
+			location[0]--;
+			break;
+		case 4: // right
+			location[0]++;
+			break;
+		case 5: // up
+			location[1]--;
+			break;
+		case 6: // down
+			location[1]++;
+			break;
+	}
+
+	// update sleepiness, and off screen monsters
+	player.sleepiness += earth->locations[location[0]][location[1]].diff / 100.;
+	player.sleepiness = std::min(player.sleepiness, 1.);
+	earth->update();
+}
+
+void World::wait()
+{
+	player.sleepiness -= 0.05;
+	player.sleepiness = std::max(player.sleepiness, 0.);
+	earth->update();
 }
 
 void World::init_names()

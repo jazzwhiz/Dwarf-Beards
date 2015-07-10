@@ -18,7 +18,7 @@ extern TTF_Font* fonts[];
 
 // finished products
 bool title(World* w);
-bool dwarf_profile(World* w);
+int dwarf_profile(World* w);
 int earth(World* w);
 
 // text and surfaces

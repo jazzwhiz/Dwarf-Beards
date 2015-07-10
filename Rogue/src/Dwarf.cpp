@@ -7,7 +7,7 @@
 std::string stat_names[5] = {"HP", "ATK", "MATK", "DEF", "MDEF"};
 
 Dwarf::Dwarf(std::string name)
-: name(name), beard(0), exp(0), thirst(0), sleepiness(0), gold(100)
+: name(name), beard(0), exp(0), gold(100), thirst(0), sleepiness(0)
 {
 
 	stats[0] = 50;

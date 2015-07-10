@@ -30,6 +30,8 @@ class World
 		std::vector<std::string> firsts, lasts;
 
 		void run();
+		void move(int direction);
+		void wait();
 };
 
 
