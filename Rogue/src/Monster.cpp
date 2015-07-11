@@ -89,15 +89,14 @@ void Monster::gain_exp(int _exp)
 	{
 		exp -= 50 * (lvl + 1) * (lvl + 1);
 		lvl++;
-		stats[0] += 5;
-		for (int i = 1; i < 6; i++)
+		for (int i = 0; i < 6; i++)
 			stats[i] += base_stats[i * 2 + 1];
 	}
 }
 
-void Monster::heal()
+void Monster::heal(double _hp)
 {
-//	hp += 2;
+	hp += _hp;
 	if (hp > stats[0])
 		hp = stats[0];
 }

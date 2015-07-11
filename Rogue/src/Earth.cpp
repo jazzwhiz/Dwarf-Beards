@@ -8,6 +8,7 @@
 #include "Camp.h"
 
 #include "Progress.h"
+#include "rng.h"
 
 Earth::Earth()
 {
@@ -25,10 +26,23 @@ Earth::Earth(int max_x, int max_y)
 	allocated = true;
 
 	Progress_Bar pbar;
-	int history_size = 10;//000;
+	int history_size = 10000;
 
+	// starting location is a camp
 	locations[max_x / 2][max_y / 2].evil = 0;
 	locations[max_x / 2][max_y / 2].camp = Camp();
+
+	// place some other camps
+	int x, y;
+	for (int i = 0; i < 4; i++)
+	{
+		x = rng.rand_int(earth_size[0] - 1);
+		y = rng.rand_int(earth_size[1] - 1);
+
+		locations[x][y].evil = 0;
+		locations[x][y].camp = Camp();
+	}
+
 	for (int i = 0; i < history_size; i++) // how much initial history
 	{
 		update();
@@ -49,11 +63,60 @@ Earth::~Earth()
 
 void Earth::update()
 {
+	// todo: spread evil (and weather)
+
+	int evil_sum, n_neighbors;
+	double difference;
+
 	for (int x = 0; x < earth_size[0]; x++)
 	{
 		for (int y = 0; y < earth_size[1]; y++)
 		{
 			locations[x][y].update();
+
+			// move evil
+			if (locations[x][y].camp.index != 0 or rng.rand() > 0.02)
+				continue;
+
+			// sometimes randomly change
+			if (rng.rand() < 0.3)
+			{
+				// slight preference for evil to combat the fixed serene camps
+				if (rng.rand() < 0.505)
+					locations[x][y].evil++;
+				else
+					locations[x][y].evil--;
+				locations[x][y].evil = std::max(locations[x][y].evil, 0);
+				locations[x][y].evil = std::min(locations[x][y].evil, 10);
+			}
+
+			evil_sum = 0;
+			n_neighbors = 0;
+			if (x > 0)
+			{
+				evil_sum += locations[x - 1][y].evil;
+				n_neighbors++;
+			}
+			if (x < earth_size[0] - 1)
+			{
+				evil_sum += locations[x + 1][y].evil;
+				n_neighbors++;
+			}
+			if (y > 0)
+			{
+				evil_sum += locations[x][y - 1].evil;
+				n_neighbors++;
+			}
+			if (y < earth_size[1] - 1)
+			{
+				evil_sum += locations[x][y + 1].evil;
+				n_neighbors++;
+			}
+
+			difference = (double)evil_sum / n_neighbors - locations[x][y].evil;
+			if (rng.rand(10) < std::abs(difference))
+				locations[x][y].evil += (difference > 0 ? 1 : -1);
+
 		} // y
 	} // x
 }

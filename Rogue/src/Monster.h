@@ -27,7 +27,7 @@ class Monster
 		double hp;
 		bool damage(double damage); // receive damage, bool is if it is still alive
 		void gain_exp(int _exp);
-		void heal();
+		void heal(double _hp);
 };
 
 extern std::vector<Monster_Base> Monster_Bases;

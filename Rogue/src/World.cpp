@@ -198,8 +198,8 @@ void World::quit()
 	std::cout << "Quitting..." << std::endl;
 
 	// output data
-//	earth->live_monster_data();
-//	dead_monster_data();
+	earth->live_monster_data();
+	dead_monster_data();
 
 	delete earth;
 }

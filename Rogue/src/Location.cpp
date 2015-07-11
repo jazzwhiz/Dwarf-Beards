@@ -31,7 +31,8 @@ Location_Base::Location_Base(std::string name, std::string letter, Uint8 _rgb[3]
 }
 
 Location::Location()
-: fog(true) // can't see by default
+//: fog(true) // can't see by default
+: fog(false) // turn off fog
 {
 	index = rng.rand_int(Location_Bases.size() - 1);
 	name = Location_Bases[index].name;
@@ -49,7 +50,7 @@ void Location::update()
 {
 	// spawn new monsters
 	// powers closer to 0.1 favors lower levels, closer 0.9 favors a flatter distribution
-	if (rng.rand() <= pow(evil / 10., 0.6) and rng.rand() < 0.1)
+	if (rng.rand() <= pow(evil / 10., 0.6) and rng.rand() < 0.05)
 		monsters.push_back(Monster(rng.rand_int(evil)));
 
 	// monsters battle
@@ -63,7 +64,7 @@ void Location::update()
 
 	// heal monsters
 	for (uint i = 0; i < monsters.size(); i++)
-		monsters[i].heal();
+		monsters[i].heal((10 - evil) / 20.);
 
 	// todo: grow trees, plants, update weather
 }
