@@ -14,7 +14,7 @@
 
 World::World()
 {
-	version = "0.03";
+	version = "0.04";
 	copyright = "(c) 2015 Peter Denton";
 	data_dir = "../data/";
 	draw::init(this);
@@ -74,6 +74,9 @@ void World::run()
 			case 7: // wait
 				wait();
 				status = 2;
+				break;
+			case 8: // battle
+				status = draw::battle(this);
 				break;
 			default:
 				break;
@@ -198,8 +201,8 @@ void World::quit()
 	std::cout << "Quitting..." << std::endl;
 
 	// output data
-	earth->live_monster_data();
-	dead_monster_data();
+//	earth->live_monster_data();
+//	dead_monster_data();
 
 	delete earth;
 }

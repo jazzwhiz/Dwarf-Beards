@@ -1,6 +1,6 @@
 CC=g++
 CFlags=-c -Wall -O3 -MMD -std=c++0x
-SDLFlags=-lSDL -lSDL_image -lSDL_mixer -lSDL_ttf
+SDLFlags=-lSDL -lSDL_ttf# -lSDL_image -lSDL_mixer
 Includes=-I$(HOME)/Dropbox/bin/cpp/include
 Library=-L$(HOME)/Dropbox/bin/cpp/lib
 Sources=$(wildcard src/*.cpp)

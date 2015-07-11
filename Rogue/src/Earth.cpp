@@ -63,7 +63,8 @@ Earth::~Earth()
 
 void Earth::update()
 {
-	// todo: spread evil (and weather)
+	// todo: spread weather
+	// todo: in world gen, update evil first, then place monsters
 
 	int evil_sum, n_neighbors;
 	double difference;

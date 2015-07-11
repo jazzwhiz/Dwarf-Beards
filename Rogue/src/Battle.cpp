@@ -6,6 +6,8 @@
 #include "Battle.h"
 #include "Monster.h"
 #include "Dwarf.h"
+#include "Draw.h"
+#include "World.h"
 
 #include "rng.h"
 
@@ -22,7 +24,6 @@ Monster_Battle::Monster_Battle(std::vector<Monster>* _monsters)
 		this->turn();
 
 	for (int i = 0; i < n_monsters; i++)
-		// monsters don't gain as much experience
 		monsters[i].gain_exp(exp[i]);
 }
 
@@ -58,7 +59,7 @@ void Monster_Battle::fight(int attacker, int defender)
 	exp[attacker] = std::max(exp[attacker], monsters[defender].stats[5]);
 	exp[defender] = std::max(exp[defender], monsters[attacker].stats[5]);
 
-	attack_style = rng.rand_int(1);
+	attack_style = rng.rand_int(1); // 0 - regular, 1 - magic
 	// do at least one damage per hit
 	damage = std::max(monsters[attacker].stats[attack_style + 1] - monsters[defender].stats[attack_style + 3], 1);
 	if (not monsters[defender].damage(damage)) // if defender dies
@@ -69,9 +70,32 @@ void Monster_Battle::fight(int attacker, int defender)
 	}
 }
 
-Dwarf_Battle::Dwarf_Battle(Dwarf& player, std::vector<Monster>& monsters)
-: monsters(monsters), turn_number(0)
+Dwarf_Battle::Dwarf_Battle(Dwarf& player, std::vector<Monster>* _monsters, World* w)
+: monsters(*_monsters), turn_number(0), exp(0)
 {
+	n_monsters = monsters.size();
 
+	for (int i = 0; i < n_monsters; i++)
+		exp = std::max(exp, monsters[i].stats[5]);
+
+	while (n_monsters > 0)
+	{
+		draw::battle(w);
+	}
+
+	player.gain_exp(exp);
+
+	// todo
+}
+
+bool dwarf_attack(Dwarf* player, Monster* monster, int attack_style)
+{
+	double damage = std::max(player->stats[attack_style + 1] - monster->stats[attack_style + 3], 1);
+	return monster->damage(damage); // true if monster is still alive
+}
+bool dwarf_defend(Dwarf* player, Monster* monster, int attack_style)
+{
+	double damage = std::max(monster->stats[attack_style + 1] - player->stats[attack_style + 3], 1);
+	return player->damage(damage); // true if dwarf is still alive
 }
 

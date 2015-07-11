@@ -2,9 +2,9 @@
 #define Draw_H
 
 #include "SDL/SDL.h"
-#include "SDL/SDL_image.h"
+//#include "SDL/SDL_image.h"
 #include "SDL/SDL_ttf.h"
-#include "SDL/SDL_mixer.h"
+//#include "SDL/SDL_mixer.h"
 
 class World;
 
@@ -22,6 +22,7 @@ extern TTF_Font* fonts[];
 bool title(World* w);
 int dwarf_profile(World* w);
 int earth(World* w);
+int battle(World* w);
 
 // text and surfaces
 void text(const std::string msg, int size, SDL_Color color, int x, int y, int alignx);
@@ -31,7 +32,7 @@ void clear_screen();
 // keyboard interfaces
 bool wait_static(); // enter progresses, otherwise, no action
 int wait_earth(); // main gameplay screen, captures keystrokes
-bool clear_events(); // clears event queue, but catches sigquit and escape
+int wait_battle(); // battle screen, captures keystrokes
 
 // large scale structure
 void init(World* w);

@@ -1,7 +1,7 @@
 #include "SDL/SDL.h"
-#include "SDL/SDL_image.h"
+//#include "SDL/SDL_image.h"
 #include "SDL/SDL_ttf.h"
-#include "SDL/SDL_mixer.h"
+//#include "SDL/SDL_mixer.h"
 
 #include <string>
 #include <algorithm>
@@ -190,6 +190,43 @@ int earth(World* w)
 	return wait_earth();
 }
 
+int battle(World* w)
+{
+	clear_screen();
+
+	int x;
+	int y = 10;
+	int n_monsters = w->earth->locations[w->location[0]][w->location[1]].monsters.size();
+	std::string tmp;
+
+	text("BATTLE", 24, RED, screen_size[0] / 2, y, 1);
+	y += 30;
+
+	// left panel
+	x = 20;
+	tmp = w->player.name + "(" + std::to_string(w->player.beard) + ") HP: ";
+	tmp += std::to_string((int)w->player.hp) + "/" + std::to_string(w->player.stats[0]);
+	text(tmp, 16, RED, x, y, 0);
+	y += 25;
+
+	x += 10;
+	for (int i = 0; i < n_monsters; i++)
+	{
+		tmp = std::to_string(i) + " - ";
+		tmp += w->earth->locations[w->location[0]][w->location[1]].monsters[i].name + "(";
+		tmp += std::to_string(w->earth->locations[w->location[0]][w->location[1]].monsters[i].lvl) + ") HP: ";
+		tmp += std::to_string((int)w->earth->locations[w->location[0]][w->location[1]].monsters[i].hp) + "/";
+		tmp += std::to_string(w->earth->locations[w->location[0]][w->location[1]].monsters[i].stats[0]);
+		text(tmp, 16, LIGHT_GRAY, x, y, 0);
+		y += 18;
+	}
+
+	text("ATK MATK", 16, LIGHT_GRAY, 4, screen_size[1] - 24, 0);
+
+	return wait_static() ? 2 : 0;
+	return 2; // goto main when done
+}
+
 // alignx: 0 - left, 1 - center, 2 - right
 void text(const std::string msg, int size, SDL_Color color, int x, int y, int alignx)
 {
@@ -200,8 +237,6 @@ void text(const std::string msg, int size, SDL_Color color, int x, int y, int al
 		assert (index < num_fonts);
 	}
 
-//	message = TTF_RenderText_Solid(font, msg.c_str(), color);
-//	message = TTF_RenderText_Shaded(font, msg.c_str(), color, BLACK);
 	message = TTF_RenderText_Blended(fonts[index], msg.c_str(), color);
 
 	if (alignx > 0)
@@ -317,6 +352,9 @@ int wait_earth()
 						waiting = false;
 						ret = 7;
 						break;
+					case SDLK_b:
+						waiting = false;
+						ret = 8;
 					default:
 						break;
 				}
@@ -329,22 +367,6 @@ int wait_earth()
 		}
 	} // waiting loop
 	return ret;
-}
-
-bool clear_events()
-{
-	SDL_Event e;
-	while (SDL_PollEvent(&e));
-	{
-		std::cout << "  ..." << &e.key.keysym.sym << std::endl;
-		if (e.type == SDL_QUIT or e.key.keysym.sym == SDLK_ESCAPE)
-		{
-			return false;
-		}
-	}
-
-	return true;
-
 }
 
 void init(World* w)

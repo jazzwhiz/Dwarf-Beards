@@ -16,7 +16,7 @@ Dwarf::Dwarf(std::string name)
 	hp = stats[0];
 }
 
-void Dwarf::damage(int damage)
+bool Dwarf::damage(int damage)
 {
 	hp -= damage;
 	if (hp <= 0)
@@ -24,6 +24,7 @@ void Dwarf::damage(int damage)
 		hp = 0;
 		// todo: die
 	}
+	return true; // alive
 }
 
 void Dwarf::gain_exp(int _exp)

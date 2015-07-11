@@ -50,7 +50,7 @@ void Location::update()
 {
 	// spawn new monsters
 	// powers closer to 0.1 favors lower levels, closer 0.9 favors a flatter distribution
-	if (rng.rand() <= pow(evil / 10., 0.6) and rng.rand() < 0.05)
+	if (rng.rand() <= pow(evil / 10., 0.6) and rng.rand() < 0.05 and monsters.size() < 10)
 		monsters.push_back(Monster(rng.rand_int(evil)));
 
 	// monsters battle
