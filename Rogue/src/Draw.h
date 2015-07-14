@@ -25,7 +25,7 @@ int earth(World* w);
 int battle(World* w);
 
 // text and surfaces
-void text(const std::string msg, int size, SDL_Color color, int x, int y, int alignx);
+int text(const std::string msg, int size, SDL_Color color, int x, int y, int alignx); // returns the width
 void apply_surface(int x, int y, SDL_Surface* source, SDL_Surface* destination);
 void clear_screen();
 

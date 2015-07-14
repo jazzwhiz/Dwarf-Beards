@@ -14,7 +14,11 @@ class Earth
 
 		int earth_size[2];
 		Location** locations;
+
 		void update();
+		void update_global(); // updates global things like evil and weather
+		void update_local(); // updates local things within a location (monsters, trees, plants)
+
 		void live_monster_data();
 };
 

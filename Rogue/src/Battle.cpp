@@ -20,8 +20,8 @@ Monster_Battle::Monster_Battle(std::vector<Monster>* _monsters)
 		exp.push_back(0);
 
 	// number of turns in an off screen monster battle
-	while (turn_number < 5 and n_monsters > 1)
-		this->turn();
+	while (n_monsters > 1 and (turn_number < 5 or turn_number < n_monsters))
+		turn();
 
 	for (int i = 0; i < n_monsters; i++)
 		monsters[i].gain_exp(exp[i]);
@@ -53,7 +53,8 @@ void Monster_Battle::fight(int attacker, int defender)
 	if (rng.rand() < 0.5)
 		return;
 
-	int attack_style, damage;
+	int attack_style;
+	double damage;
 
 	// set exp for each
 	exp[attacker] = std::max(exp[attacker], monsters[defender].stats[5]);
@@ -61,7 +62,9 @@ void Monster_Battle::fight(int attacker, int defender)
 
 	attack_style = rng.rand_int(1); // 0 - regular, 1 - magic
 	// do at least one damage per hit
-	damage = std::max(monsters[attacker].stats[attack_style + 1] - monsters[defender].stats[attack_style + 3], 1);
+	damage = monsters[attacker].stats[attack_style + 1] - monsters[defender].stats[attack_style + 3];
+	damage = rng.gaussian(damage, 0.2 * damage); // 20% spread in damage
+	damage = std::max(damage, 1.);
 	if (not monsters[defender].damage(damage)) // if defender dies
 	{
 		monsters.erase(monsters.begin() + defender);
@@ -90,12 +93,16 @@ Dwarf_Battle::Dwarf_Battle(Dwarf& player, std::vector<Monster>* _monsters, World
 
 bool dwarf_attack(Dwarf* player, Monster* monster, int attack_style)
 {
-	double damage = std::max(player->stats[attack_style + 1] - monster->stats[attack_style + 3], 1);
+	double damage = player->stats[attack_style + 1] - monster->stats[attack_style + 3];
+	damage = rng.gaussian(damage, 0.2 * damage); // 20% spread in damage
+	damage = std::max(damage, 1.);
 	return monster->damage(damage); // true if monster is still alive
 }
 bool dwarf_defend(Dwarf* player, Monster* monster, int attack_style)
 {
-	double damage = std::max(monster->stats[attack_style + 1] - player->stats[attack_style + 3], 1);
+	double damage = monster->stats[attack_style + 1] - player->stats[attack_style + 3];
+	damage = rng.gaussian(damage, 0.2 * damage); // 20% spread in damage
+	damage = std::max(damage, 1.);
 	return player->damage(damage); // true if dwarf is still alive
 }
 

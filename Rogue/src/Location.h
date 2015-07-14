@@ -36,7 +36,7 @@ class Location
 		const std::string evil_str(); // getter, in text form
 		void update();
 
-		// objects
+		// todo: objects
 };
 
 void read_locations(World* w);

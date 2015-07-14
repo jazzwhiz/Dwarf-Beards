@@ -25,9 +25,6 @@ Earth::Earth(int max_x, int max_y)
 		locations[x] = new Location[earth_size[1]];
 	allocated = true;
 
-	Progress_Bar pbar;
-	int history_size = 10000;
-
 	// starting location is a camp
 	locations[max_x / 2][max_y / 2].evil = 0;
 	locations[max_x / 2][max_y / 2].camp = Camp();
@@ -43,11 +40,19 @@ Earth::Earth(int max_x, int max_y)
 		locations[x][y].camp = Camp();
 	}
 
+	Progress_Bar pbar;
+	int history_size = 10000;
 	for (int i = 0; i < history_size; i++) // how much initial history
 	{
-		update();
+		update_global();
 		pbar.update((double)i / history_size);
 	}
+	for (int i = 0; i < history_size; i++) // how much initial history
+	{
+		update_local();
+		pbar.update((double)i / history_size);
+	}
+	
 }
 
 Earth::~Earth()
@@ -63,6 +68,12 @@ Earth::~Earth()
 
 void Earth::update()
 {
+	update_global();
+	update_local();
+}
+
+void Earth::update_global()
+{
 	// todo: spread weather
 	// todo: in world gen, update evil first, then place monsters
 
@@ -73,14 +84,12 @@ void Earth::update()
 	{
 		for (int y = 0; y < earth_size[1]; y++)
 		{
-			locations[x][y].update();
-
 			// move evil
 			if (locations[x][y].camp.index != 0 or rng.rand() > 0.02)
 				continue;
 
 			// sometimes randomly change
-			if (rng.rand() < 0.3)
+			if (rng.rand() < 0.2)
 			{
 				// slight preference for evil to combat the fixed serene camps
 				if (rng.rand() < 0.505)
@@ -120,6 +129,17 @@ void Earth::update()
 
 		} // y
 	} // x
+}
+
+void Earth::update_local()
+{
+	for (int x = 0; x < earth_size[0]; x++)
+	{
+		for (int y = 0; y < earth_size[1]; y++)
+		{
+			locations[x][y].update();
+		}
+	}
 }
 
 void Earth::live_monster_data()

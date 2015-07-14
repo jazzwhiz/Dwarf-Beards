@@ -192,45 +192,77 @@ int earth(World* w)
 
 int battle(World* w)
 {
-	clear_screen();
-
-	int x;
-	int y = 10;
-	int n_monsters = w->earth->locations[w->location[0]][w->location[1]].monsters.size();
-	std::string tmp;
-
-	text("BATTLE", 24, RED, screen_size[0] / 2, y, 1);
-	y += 30;
-
-	// left panel
-	x = 20;
-	tmp = w->player.name + "(" + std::to_string(w->player.beard) + ") HP: ";
-	tmp += std::to_string((int)w->player.hp) + "/" + std::to_string(w->player.stats[0]);
-	text(tmp, 16, RED, x, y, 0);
-	y += 25;
-
-	x += 10;
-	for (int i = 0; i < n_monsters; i++)
+	bool battling = true;
+	int attack_target = -1;
+	int attack_style = -1;
+	int attack;
+	while (battling)
 	{
-		tmp = std::to_string(i) + " - ";
-		tmp += w->earth->locations[w->location[0]][w->location[1]].monsters[i].name + "(";
-		tmp += std::to_string(w->earth->locations[w->location[0]][w->location[1]].monsters[i].lvl) + ") HP: ";
-		tmp += std::to_string((int)w->earth->locations[w->location[0]][w->location[1]].monsters[i].hp) + "/";
-		tmp += std::to_string(w->earth->locations[w->location[0]][w->location[1]].monsters[i].stats[0]);
-		text(tmp, 16, LIGHT_GRAY, x, y, 0);
-		y += 18;
+		clear_screen();
+
+		int x;
+		int y = 10;
+		int n_monsters = w->earth->locations[w->location[0]][w->location[1]].monsters.size();
+		std::string tmp;
+
+		text("BATTLE", 24, RED, screen_size[0] / 2, y, 1);
+		y += 30;
+
+		// left panel
+		x = 20;
+		tmp = w->player.name + "(" + std::to_string(w->player.beard) + ") HP: ";
+		tmp += std::to_string((int)w->player.hp) + "/" + std::to_string(w->player.stats[0]);
+		text(tmp, 16, RED, x, y, 0);
+		y += 25;
+
+		x += 10;
+		for (int i = 0; i < n_monsters; i++)
+		{
+			tmp = std::to_string(i) + " - ";
+			tmp += w->earth->locations[w->location[0]][w->location[1]].monsters[i].name + "(";
+			tmp += std::to_string(w->earth->locations[w->location[0]][w->location[1]].monsters[i].lvl) + ") HP: ";
+			tmp += std::to_string((int)w->earth->locations[w->location[0]][w->location[1]].monsters[i].hp) + "/";
+			tmp += std::to_string(w->earth->locations[w->location[0]][w->location[1]].monsters[i].stats[0]);
+			text(tmp, 16, (attack_target == i) ? WHITE : LIGHT_GRAY, x, y, 0);
+			y += 18;
+		}
+
+		int width;
+		width = text("ATK ", 16, (attack_style == 1) ? WHITE : LIGHT_GRAY, 4, screen_size[1] - 24, 0);
+		text("MATK ", 16, (attack_style == 2) ? WHITE : LIGHT_GRAY, 4 + width, screen_size[1] - 24, 0);
+
+		// -1 - not selected yet, 0 - regular, 1 - magic
+		attack = wait_battle(); 
+
+		// quit
+		if (attack == 0)
+		{
+			battling = false;
+			return 0;
+		}
+		if (attack <= 2)
+			attack_style = attack - 1;
+		if (attack == 3 and attack_style >= 0 and attack_target >= 0)
+		{
+			// todo: do battle
+		}
+		if (attack >= 4)
+		{
+			attack_target = attack - 4;
+			if (attack_target >= n_monsters)
+				attack_target = -1;
+		}
+
+//		return wait_static() ? 2 : 0;
+//		return 2; // goto main when done
 	}
-
-	text("ATK MATK", 16, LIGHT_GRAY, 4, screen_size[1] - 24, 0);
-
-	return wait_static() ? 2 : 0;
-	return 2; // goto main when done
 }
 
 // alignx: 0 - left, 1 - center, 2 - right
-void text(const std::string msg, int size, SDL_Color color, int x, int y, int alignx)
+int text(const std::string msg, int size, SDL_Color color, int x, int y, int alignx)
 {
 	int index = 0;
+	int width;
 	while (font_sizes[index] != size)
 	{
 		index++;
@@ -239,10 +271,9 @@ void text(const std::string msg, int size, SDL_Color color, int x, int y, int al
 
 	message = TTF_RenderText_Blended(fonts[index], msg.c_str(), color);
 
+	TTF_SizeText(fonts[index], msg.c_str(), &width, NULL);
 	if (alignx > 0)
 	{
-		int width;
-		TTF_SizeText(fonts[index], msg.c_str(), &width, NULL);
 		if (alignx == 1)
 			x -= width / 2;
 		if (alignx == 2)
@@ -250,6 +281,7 @@ void text(const std::string msg, int size, SDL_Color color, int x, int y, int al
 	}
 
 	apply_surface(x, y, message, screen);
+	return width;
 }
 
 void apply_surface(int x, int y, SDL_Surface* source, SDL_Surface* destination)
@@ -368,6 +400,63 @@ int wait_earth()
 	} // waiting loop
 	return ret;
 }
+
+// 0: quit
+// 1: atk
+// 2: matk
+// 4-13: 0-9, that is, take ret and subtract 4
+int wait_battle()
+{
+	bool waiting = true;
+	int ret = 0;
+	SDL_Event e;
+	Timer fps;
+	while (waiting)
+	{
+		fps.start();
+		while(SDL_PollEvent(&e));
+		{
+			if (e.type == SDL_QUIT or e.key.keysym.sym == SDLK_ESCAPE)
+			{
+				waiting = false;
+				ret = 0;
+			}
+			if (e.type == SDL_KEYDOWN)
+			{
+				if (e.key.keysym.sym >= 48 and e.key.keysym.sym <= 57)
+				{
+					waiting = false;
+					ret = e.key.keysym.sym - 48 + 4;
+					break;
+				}
+				switch (e.key.keysym.sym)
+				{
+					case SDLK_a:
+						waiting = false;
+						ret = 1;
+						break;
+					case SDLK_m:
+						waiting = false;
+						ret = 2;
+						break;
+					case SDLK_RETURN:
+						waiting = false;
+						ret = 3;
+						break;
+					default:
+						break;
+				}
+			}
+		}
+		SDL_Flip(screen);
+		if (fps.get_ticks() < 1000 / framerate)
+		{
+			SDL_Delay((1000 / framerate) - fps.get_ticks());
+		}
+	} // waiting loop
+	return ret;
+}
+
 
 void init(World* w)
 {
