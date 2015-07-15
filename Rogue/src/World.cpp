@@ -80,6 +80,14 @@ void World::run()
 			case 8: // battle
 				status = dwarf_battle(this);
 				break;
+			case 9: // tavern
+				enter_building("Tavern");
+				status = 2;
+				break;
+			case 10: // inn
+				enter_building("Inn");
+				status = 2;
+				break;
 			default:
 				break;
 		}
@@ -149,6 +157,20 @@ void World::wait()
 	update();
 }
 
+void World::enter_building(std::string building_name)
+{
+	for (unsigned i = 0; i < earth->locations[location[0]][location[1]].camp.buildings.size(); i++)
+	{
+		if (building_name == earth->locations[location[0]][location[1]].camp.buildings[i].name)
+		{
+			std::cout << building_name << std::endl;
+			// todo actually enter building
+
+			return;
+		}
+	}
+}
+
 void World::update()
 {
 	earth->update();
@@ -203,8 +225,8 @@ void World::quit()
 	std::cout << "Quitting..." << std::endl;
 
 	// output data
-	earth->live_monster_data();
-	dead_monster_data();
+//	earth->live_monster_data();
+//	dead_monster_data();
 
 	delete earth;
 }

@@ -215,8 +215,8 @@ void battle(World* w, int attack_style, int attack_target, std::vector<std::stri
 		tmp = std::to_string(i) + " - ";
 		tmp += w->earth->locations[w->location[0]][w->location[1]].monsters[i].name + "(";
 		tmp += std::to_string(w->earth->locations[w->location[0]][w->location[1]].monsters[i].lvl) + ") HP: ";
-		tmp += std::to_string((int)w->earth->locations[w->location[0]][w->location[1]].monsters[i].hp) + "/";
-		tmp += std::to_string(w->earth->locations[w->location[0]][w->location[1]].monsters[i].stats[0]);
+		tmp += std::to_string((int)(100 * w->earth->locations[w->location[0]][w->location[1]].monsters[i].hp / 
+			w->earth->locations[w->location[0]][w->location[1]].monsters[i].stats[0])) + "%";
 		text(tmp, 16, (attack_target == i) ? WHITE : LIGHT_GRAY, x, y, 0);
 		y += 18;
 	}
@@ -320,7 +320,11 @@ bool wait_static()
 
 // 0: quit
 // 1: character screen
-// 2-5: L, R, U, D
+// 3-6: L, R, U, D
+// 7: wait
+// 8: battle
+// 9: tavern
+// 10: inn
 int wait_earth()
 {
 	bool waiting = true;
@@ -368,6 +372,15 @@ int wait_earth()
 					case SDLK_b:
 						waiting = false;
 						ret = 8;
+						break;
+					case SDLK_t:
+						waiting = false;
+						ret = 9;
+						break;
+					case SDLK_i:
+						waiting = false;
+						ret = 10;
+						break;
 					default:
 						break;
 				}

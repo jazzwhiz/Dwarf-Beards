@@ -13,8 +13,6 @@ class Being
 		int lvl, exp;
 		double hp;
 
-//		int race; // 0 - dwarf, 1 - monster
-
 		// attack_style: 0 - regular, 1 - magic
 		// returns damage done: 0 - miss, -1 means target is killed
 		double take_damage(Being attacker, int attack_style);

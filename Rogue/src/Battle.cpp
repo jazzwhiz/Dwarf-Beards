@@ -168,7 +168,15 @@ int dwarf_battle(World* w)
 	}
 
 	w->player.gain_exp(exp);
-	return 2;
-	// todo
+	readout.push_back("");
+	readout.push_back("Victory!");
+	readout.push_back(std::to_string(exp) + " experience gained.");
+
+	// todo: level up?
+
+	draw::battle(w, attack_style, attack_target, readout);
+	return draw::wait_static() ? 2 : 0;
+
+
 }
 
