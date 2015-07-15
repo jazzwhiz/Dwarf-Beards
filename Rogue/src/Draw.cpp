@@ -70,8 +70,8 @@ int dwarf_profile(World* w)
 	text(tmp, 24, LIGHT_GRAY, screen_size[0] / 2, y, 1);
 	y += 30;
 
-	tmp = "Beard length: " + std::to_string(w->player.beard);
-	tmp += "   Exp: " + std::to_string((int)(100 * (double)(w->player.exp) / (50 * (w->player.beard + 1) * (w->player.beard + 1)))) + "%";
+	tmp = "Beard length: " + std::to_string(w->player.lvl);
+	tmp += "   Exp: " + std::to_string((int)(100 * (double)(w->player.exp) / (50 * (w->player.lvl + 1) * (w->player.lvl + 1)))) + "%";
 	text(tmp, 16, LIGHT_GRAY, screen_size[0] / 2, y, 1);
 	y += 30;
 
@@ -130,7 +130,7 @@ int earth(World* w)
 	y += 25;
 
 	// player info
-	text(w->player.name + " (" + std::to_string(w->player.beard) + ")", 16, LIGHT_GRAY, x, y, 0);
+	text(w->player.name + " (" + std::to_string(w->player.lvl) + ")", 16, LIGHT_GRAY, x, y, 0);
 	y += 22;
 
 	text(stat_names[0] + ": " + std::to_string((int)w->player.hp) + "/" + std::to_string(w->player.stats[0]), 14, LIGHT_GRAY, x + 10, y, 0);
@@ -190,72 +190,51 @@ int earth(World* w)
 	return wait_earth();
 }
 
-int battle(World* w)
+void battle(World* w, int attack_style, int attack_target, std::vector<std::string> readout)
 {
-	bool battling = true;
-	int attack_target = -1;
-	int attack_style = -1;
-	int attack;
-	while (battling)
+	clear_screen();
+
+	int x;
+	int y = 10;
+	int n_monsters = w->earth->locations[w->location[0]][w->location[1]].monsters.size();
+	std::string tmp;
+
+	text("BATTLE", 24, RED, screen_size[0] / 2, y, 1);
+	y += 30;
+
+	// left panel
+	x = 20;
+	tmp = w->player.name + "(" + std::to_string(w->player.lvl) + ") HP: ";
+	tmp += std::to_string((int)w->player.hp) + "/" + std::to_string(w->player.stats[0]);
+	text(tmp, 16, RED, x, y, 0);
+	y += 25;
+
+	x += 10;
+	for (int i = 0; i < n_monsters; i++)
 	{
-		clear_screen();
-
-		int x;
-		int y = 10;
-		int n_monsters = w->earth->locations[w->location[0]][w->location[1]].monsters.size();
-		std::string tmp;
-
-		text("BATTLE", 24, RED, screen_size[0] / 2, y, 1);
-		y += 30;
-
-		// left panel
-		x = 20;
-		tmp = w->player.name + "(" + std::to_string(w->player.beard) + ") HP: ";
-		tmp += std::to_string((int)w->player.hp) + "/" + std::to_string(w->player.stats[0]);
-		text(tmp, 16, RED, x, y, 0);
-		y += 25;
-
-		x += 10;
-		for (int i = 0; i < n_monsters; i++)
-		{
-			tmp = std::to_string(i) + " - ";
-			tmp += w->earth->locations[w->location[0]][w->location[1]].monsters[i].name + "(";
-			tmp += std::to_string(w->earth->locations[w->location[0]][w->location[1]].monsters[i].lvl) + ") HP: ";
-			tmp += std::to_string((int)w->earth->locations[w->location[0]][w->location[1]].monsters[i].hp) + "/";
-			tmp += std::to_string(w->earth->locations[w->location[0]][w->location[1]].monsters[i].stats[0]);
-			text(tmp, 16, (attack_target == i) ? WHITE : LIGHT_GRAY, x, y, 0);
-			y += 18;
-		}
-
-		int width;
-		width = text("ATK ", 16, (attack_style == 1) ? WHITE : LIGHT_GRAY, 4, screen_size[1] - 24, 0);
-		text("MATK ", 16, (attack_style == 2) ? WHITE : LIGHT_GRAY, 4 + width, screen_size[1] - 24, 0);
-
-		// -1 - not selected yet, 0 - regular, 1 - magic
-		attack = wait_battle(); 
-
-		// quit
-		if (attack == 0)
-		{
-			battling = false;
-			return 0;
-		}
-		if (attack <= 2)
-			attack_style = attack - 1;
-		if (attack == 3 and attack_style >= 0 and attack_target >= 0)
-		{
-			// todo: do battle
-		}
-		if (attack >= 4)
-		{
-			attack_target = attack - 4;
-			if (attack_target >= n_monsters)
-				attack_target = -1;
-		}
-
-//		return wait_static() ? 2 : 0;
-//		return 2; // goto main when done
+		tmp = std::to_string(i) + " - ";
+		tmp += w->earth->locations[w->location[0]][w->location[1]].monsters[i].name + "(";
+		tmp += std::to_string(w->earth->locations[w->location[0]][w->location[1]].monsters[i].lvl) + ") HP: ";
+		tmp += std::to_string((int)w->earth->locations[w->location[0]][w->location[1]].monsters[i].hp) + "/";
+		tmp += std::to_string(w->earth->locations[w->location[0]][w->location[1]].monsters[i].stats[0]);
+		text(tmp, 16, (attack_target == i) ? WHITE : LIGHT_GRAY, x, y, 0);
+		y += 18;
 	}
+
+	int width;
+	width = text("ATK ", 16, (attack_style == 0) ? WHITE : LIGHT_GRAY, 4, screen_size[1] - 24, 0);
+	text("MATK ", 16, (attack_style == 1) ? WHITE : LIGHT_GRAY, 4 + width, screen_size[1] - 24, 0);
+
+	// right panel
+	// battle action
+	x = screen_size[0] / 2 + 5;
+	y = 50;
+	for (unsigned i = 0; i < readout.size(); i++)
+	{
+		text(readout[i], 16, LIGHT_GRAY, x, y, 0);
+		y += 18;
+	}
+
 }
 
 // alignx: 0 - left, 1 - center, 2 - right
@@ -312,7 +291,7 @@ bool wait_static()
 		fps.start();
 		while(SDL_PollEvent(&e));
 		{
-			if (e.type == SDL_QUIT or e.key.keysym.sym == SDLK_ESCAPE)
+			if (e.type == SDL_QUIT)
 			{
 				waiting = false;
 				playing = false;
@@ -322,7 +301,9 @@ bool wait_static()
 				switch (e.key.keysym.sym)
 				{
 					case SDLK_RETURN:
+					case SDLK_ESCAPE:
 						waiting = false;
+						break;
 					default:
 						break;
 				}
@@ -351,7 +332,7 @@ int wait_earth()
 		fps.start();
 		while(SDL_PollEvent(&e));
 		{
-			if (e.type == SDL_QUIT or e.key.keysym.sym == SDLK_ESCAPE)
+			if (e.type == SDL_QUIT)
 			{
 				waiting = false;
 				ret = 0;

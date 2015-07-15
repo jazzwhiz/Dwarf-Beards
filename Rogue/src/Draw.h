@@ -22,7 +22,7 @@ extern TTF_Font* fonts[];
 bool title(World* w);
 int dwarf_profile(World* w);
 int earth(World* w);
-int battle(World* w);
+void battle(World* w, int attack_style, int attack_target, std::vector<std::string> readout); // subset of dwarf_battle
 
 // text and surfaces
 int text(const std::string msg, int size, SDL_Color color, int x, int y, int alignx); // returns the width

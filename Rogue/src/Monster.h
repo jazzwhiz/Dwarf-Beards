@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include "Being.h"
+
 class World;
 
 class Monster_Base
@@ -17,15 +19,14 @@ class Monster_Base
 		std::vector<int> deaths; // deaths[i] is the number of i lvls that died
 };
 
-class Monster
+class Monster : public Being
 {
 	public:
 		Monster(int lvl);
 		~Monster();
 		std::string name;
-		int lvl, exp, index,base_stats[15], stats[6]; // maxhp, atk, matk, def, mdef, exp (awarded)
-		double hp;
-		bool damage(double damage); // receive damage, bool is if it is still alive
+		int lvl, exp, index,base_stats[15];//, stats[6]; // maxhp, atk, matk, def, mdef, exp (awarded)
+
 		void gain_exp(int _exp);
 		void heal(double _hp);
 };

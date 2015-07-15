@@ -10,6 +10,8 @@
 #include "Earth.h"
 #include "Location.h"
 #include "Camp.h"
+#include "Battle.h"
+
 #include "rng.h"
 
 World::World()
@@ -76,7 +78,7 @@ void World::run()
 				status = 2;
 				break;
 			case 8: // battle
-				status = draw::battle(this);
+				status = dwarf_battle(this);
 				break;
 			default:
 				break;

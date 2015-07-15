@@ -3,20 +3,21 @@
 
 #include <string>
 
+#include "Being.h"
+
 extern std::string stat_names[5];
 
-class Dwarf
+class Dwarf : public Being
 {
 	public:
 		Dwarf() {};
 		Dwarf(std::string name);
-		std::string name;
-		int beard, exp, gold;
+//		std::string name;
+		int gold;
 		double thirst, sleepiness;
-		int stats[5]; // maxhp, atk, matk, def, mdef
-		double hp;
+//		int stats[5]; // maxhp, atk, matk, def, mdef
+//		double hp;
 
-		bool damage(int damage);
 		void gain_exp(int _exp);
 		void update();
 };

@@ -67,19 +67,10 @@ Monster::Monster(int lvl)
 
 Monster::~Monster()
 {
+	while (lvl >= (int)Monster_Bases[index].deaths.size())
+		Monster_Bases[index].deaths.push_back(0);
+	Monster_Bases[index].deaths[lvl]++;
 //	std::cout << name << " was killed." << std::endl;
-}
-
-bool Monster::damage(double damage)
-{
-	hp -= damage;
-	if (hp <= 0)
-	{
-		while (lvl >= (int)Monster_Bases[index].deaths.size())
-			Monster_Bases[index].deaths.push_back(0);
-		Monster_Bases[index].deaths[lvl]++;
-	}
-	return (hp > 0);
 }
 
 void Monster::gain_exp(int _exp)

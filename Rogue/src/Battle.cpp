@@ -8,6 +8,7 @@
 #include "Dwarf.h"
 #include "Draw.h"
 #include "World.h"
+#include "Location.h"
 
 #include "rng.h"
 
@@ -42,8 +43,8 @@ void Monster_Battle::turn()
 	// loop over attackers
 	for (int i = 0; i < n_monsters; i++)
 	{
-		target = (rng.rand_int(1, n_monsters - 1) + i) % n_monsters;
-		this->fight(i, target);
+		target = (rng.rand_int(1, n_monsters - 1) + order[i]) % n_monsters;
+		this->fight(order[i], target);
 	} // i, attackers
 }
 
@@ -53,19 +54,12 @@ void Monster_Battle::fight(int attacker, int defender)
 	if (rng.rand() < 0.5)
 		return;
 
-	int attack_style;
-	double damage;
-
 	// set exp for each
 	exp[attacker] = std::max(exp[attacker], monsters[defender].stats[5]);
 	exp[defender] = std::max(exp[defender], monsters[attacker].stats[5]);
 
-	attack_style = rng.rand_int(1); // 0 - regular, 1 - magic
-	// do at least one damage per hit
-	damage = monsters[attacker].stats[attack_style + 1] - monsters[defender].stats[attack_style + 3];
-	damage = rng.gaussian(damage, 0.2 * damage); // 20% spread in damage
-	damage = std::max(damage, 1.);
-	if (not monsters[defender].damage(damage)) // if defender dies
+	int attack_style = rng.rand_int(1); // 0 - regular, 1 - magic
+	if (not monsters[defender].take_damage(monsters[attacker], attack_style)) // if defender dies
 	{
 		monsters.erase(monsters.begin() + defender);
 		exp.erase(exp.begin() + defender);
@@ -73,36 +67,108 @@ void Monster_Battle::fight(int attacker, int defender)
 	}
 }
 
-Dwarf_Battle::Dwarf_Battle(Dwarf& player, std::vector<Monster>* _monsters, World* w)
-: monsters(*_monsters), turn_number(0), exp(0)
+int dwarf_battle(World* w)
 {
-	n_monsters = monsters.size();
+	std::vector<Monster>& monsters = w->earth->locations[w->location[0]][w->location[1]].monsters;
+	int turn_number = 0;
+	int exp = 0;
+
+	int n_monsters = monsters.size();
 
 	for (int i = 0; i < n_monsters; i++)
 		exp = std::max(exp, monsters[i].stats[5]);
 
-	while (n_monsters > 0)
+	bool battling = true;
+	int attack_style = -1;
+	int attack_target = -1;
+	int attack, target;
+	double damage;
+	std::vector<std::string> readout;
+	std::string tmp;
+
+	while (battling and n_monsters > 0)
 	{
-		draw::battle(w);
+		turn_number++;
+		draw::battle(w, attack_style, attack_target, readout);
+
+		// -1 - not selected yet, 0 - regular, 1 - magic
+		attack = draw::wait_battle(); 
+
+		// quit
+		if (attack == 0)
+		{
+			battling = false;
+			return 0;
+		}
+		if (attack <= 2)
+			attack_style = attack - 1;
+		if (attack == 3 and attack_style >= 0 and attack_target >= 0)
+		{
+			int order[n_monsters + 1];
+			readout.clear();
+			for (int i = 0; i < n_monsters + 1; i++)
+				order[i] = i;
+			rng.shuffle(order, n_monsters + 1);
+
+			for (int i = 0; i < n_monsters + 1; i++)
+			{
+				if (order[i] == n_monsters) // dwarf is attacking
+				{
+					damage = monsters[attack_target].take_damage(w->player, attack_style);
+					tmp = w->player.name;
+					if (damage == 0)
+						tmp += " misses ";
+					else if (damage == -1)
+						tmp += " kills ";
+					else
+						tmp += " does " + std::to_string((int)damage) + " damage to ";
+					tmp += monsters[attack_target].name + "(" + std::to_string(monsters[attack_target].lvl) + ")";
+				}
+				else
+				{
+					target = (rng.rand_int(1, n_monsters) + order[i]) % (n_monsters + 1);
+					if (target == n_monsters) // if targeting player
+						damage = w->player.take_damage(monsters[order[i]], rng.rand_int(1));
+					else
+						damage = monsters[target].take_damage(monsters[order[i]], rng.rand_int(1));
+					tmp = monsters[order[i]].name + "(" + std::to_string(monsters[order[i]].lvl) + ")";
+					if (damage == 0)
+						tmp += " misses ";
+					else if (damage == -1)
+						tmp += " kills ";
+					else
+						tmp += " does " + std::to_string((int)damage) + " damage to ";
+					if (target == n_monsters) // if targeting player
+						tmp += w->player.name;
+					else
+						tmp += monsters[target].name + "(" + std::to_string(monsters[target].lvl) + ")";
+				}
+				readout.push_back(tmp);
+				tmp.clear();
+
+				// erase dead monsters
+				for (unsigned i = 0; i < monsters.size(); i++)
+				{
+					if (monsters[i].hp <= 0)
+						monsters.erase(monsters.begin() + i);
+				}
+				n_monsters = monsters.size();
+			}
+
+			attack_style = -1;
+			attack_target = -1;
+		}
+		if (attack >= 4)
+		{
+			attack_target = attack - 4;
+			if (attack_target >= n_monsters)
+				attack_target = -1;
+		}
+
 	}
 
-	player.gain_exp(exp);
-
+	w->player.gain_exp(exp);
+	return 2;
 	// todo
-}
-
-bool dwarf_attack(Dwarf* player, Monster* monster, int attack_style)
-{
-	double damage = player->stats[attack_style + 1] - monster->stats[attack_style + 3];
-	damage = rng.gaussian(damage, 0.2 * damage); // 20% spread in damage
-	damage = std::max(damage, 1.);
-	return monster->damage(damage); // true if monster is still alive
-}
-bool dwarf_defend(Dwarf* player, Monster* monster, int attack_style)
-{
-	double damage = monster->stats[attack_style + 1] - player->stats[attack_style + 3];
-	damage = rng.gaussian(damage, 0.2 * damage); // 20% spread in damage
-	damage = std::max(damage, 1.);
-	return player->damage(damage); // true if dwarf is still alive
 }
 
