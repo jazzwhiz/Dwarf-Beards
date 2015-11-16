@@ -31,8 +31,8 @@ Location_Base::Location_Base(std::string name, std::string letter, Uint8 _rgb[3]
 }
 
 Location::Location()
-//: fog(true) // can't see by default
-: fog(false) // turn off fog
+: fog(true) // can't see by default
+//: fog(false) // turn off fog
 {
 	index = rng.rand_int(Location_Bases.size() - 1);
 	name = Location_Bases[index].name;

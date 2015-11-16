@@ -4,21 +4,22 @@
 //#include "SDL/SDL_mixer.h"
 
 #include <string>
+#include <vector>
 #include <algorithm>
 #include <assert.h>
 
 #include <iostream>
 
 #include "Draw.h"
-#include "Timer.h"
+#include "Keyboard.h"
 #include "Dwarf.h"
 #include "World.h"
 #include "Location.h"
-
+#include "Modification.h"
 
 namespace draw
 {
-
+// screen
 const int framerate = 32;
 const int screen_size[2] = {800, 600};
 SDL_Surface* screen;
@@ -41,13 +42,13 @@ const SDL_Color DARK_BLUE = {0, 0, 100};
 const SDL_Color YELLOW = {255, 255, 0};
 
 // hp, atk, matk, def, mdef
-SDL_Color stat_colors[5] = {BLUE, RED, YELLOW, BROWN, WHITE};
+SDL_Color stat_colors[5] = {BLUE, LIGHT_GRAY, RED, BROWN, WHITE};
 
 const int num_fonts = 6;
 const int font_sizes[num_fonts] = {12, 14, 16, 24, 28, 72};
 TTF_Font* fonts[num_fonts];
 
-bool title(World* w)
+int title(World* w)
 {
 	clear_screen();
 
@@ -56,7 +57,7 @@ bool title(World* w)
 	text("Press enter to start", 16, LIGHT_GRAY, screen_size[0] / 2, 570, 1);
 	text("Version " + w->version + " " + w->copyright, 12, DARK_GRAY, screen_size[0], screen_size[1] - 16, 2);
 
-	return wait_static();
+	return keyboard::simple();
 }
 
 int dwarf_profile(World* w)
@@ -93,7 +94,10 @@ int dwarf_profile(World* w)
 
 	// todo: equipment
 
-	return wait_static() ? 2 : 0;
+	int ret = keyboard::simple();
+	if (ret == 1) // esc  } -> main
+		ret = 2; // enter }
+	return ret;
 }
 
 int earth(World* w)
@@ -163,7 +167,7 @@ int earth(World* w)
 		y += 22;
 		for (int i = 0; i < n_buildings; i++)
 		{
-			text(w->earth->locations[w->location[0]][w->location[1]].camp.buildings[i].name, 14, LIGHT_GRAY, x + 10, y, 0);
+			text(w->earth->locations[w->location[0]][w->location[1]].camp.buildings[i]->name, 14, LIGHT_GRAY, x + 10, y, 0);
 			y += 18;
 		}
 	}
@@ -187,7 +191,7 @@ int earth(World* w)
 		y += 18;
 	}
 
-	return wait_earth();
+	return keyboard::earth();
 }
 
 void battle(World* w, int attack_style, int attack_target, std::vector<std::string> readout)
@@ -237,6 +241,32 @@ void battle(World* w, int attack_style, int attack_target, std::vector<std::stri
 
 }
 
+int inside_building(World* w, Building_Base* building)
+{
+	clear_screen();
+
+	int y = 10;
+	text("Welcome to the " + building->name, 24, LIGHT_GRAY, screen_size[0] / 2, y, 1);
+	y += 30;
+
+	int width;
+	int x = 20;
+	width = text(w->player.name, 16, RED, x, y, 0);
+	text(" (" + std::to_string(w->player.gold) + ")", 16, YELLOW, x + width, y, 0);
+	x += 10;
+	y += 20;
+
+	unsigned focus = 0;
+	for (unsigned i = 0; i < building->modifications.size(); i++)
+	{
+		width = text(std::to_string(i) + " - " + building->modifications[i]->description, 16, focus == i ? WHITE : LIGHT_GRAY, x, y, 0);
+		width += text("(" + std::to_string(building->modifications[i]->cost) + ")", 16, YELLOW, x + width, y, 0);
+		y += 20;
+	}
+
+	return -1;
+}
+
 // alignx: 0 - left, 1 - center, 2 - right
 int text(const std::string msg, int size, SDL_Color color, int x, int y, int alignx)
 {
@@ -280,178 +310,6 @@ void clear_screen()
 	SDL_FillRect(screen, NULL, 0);
 }
 
-bool wait_static()
-{
-	bool waiting = true;
-	bool playing = true;
-	SDL_Event e;
-	Timer fps;
-	while (waiting)
-	{
-		fps.start();
-		while(SDL_PollEvent(&e));
-		{
-			if (e.type == SDL_QUIT)
-			{
-				waiting = false;
-				playing = false;
-			}
-			if (e.type == SDL_KEYDOWN)
-			{
-				switch (e.key.keysym.sym)
-				{
-					case SDLK_RETURN:
-					case SDLK_ESCAPE:
-						waiting = false;
-						break;
-					default:
-						break;
-				}
-			}
-		}
-		SDL_Flip(screen);
-		if (fps.get_ticks() < 1000 / framerate)
-		{
-			SDL_Delay((1000 / framerate) - fps.get_ticks());
-		}
-	} // waiting loop
-	return playing;
-}
-
-// 0: quit
-// 1: character screen
-// 3-6: L, R, U, D
-// 7: wait
-// 8: battle
-// 9: tavern
-// 10: inn
-int wait_earth()
-{
-	bool waiting = true;
-	int ret = 0;
-	SDL_Event e;
-	Timer fps;
-	while (waiting)
-	{
-		fps.start();
-		while(SDL_PollEvent(&e));
-		{
-			if (e.type == SDL_QUIT)
-			{
-				waiting = false;
-				ret = 0;
-			}
-			if (e.type == SDL_KEYDOWN)
-			{
-				switch (e.key.keysym.sym)
-				{
-					case SDLK_c:
-						waiting = false;
-						ret = 1;
-						break;
-					case SDLK_LEFT:
-						waiting = false;
-						ret = 3;
-						break;
-					case SDLK_RIGHT:
-						waiting = false;
-						ret = 4;
-						break;
-					case SDLK_UP:
-						waiting = false;
-						ret = 5;
-						break;
-					case SDLK_DOWN:
-						waiting = false;
-						ret = 6;
-						break;
-					case SDLK_w:
-						waiting = false;
-						ret = 7;
-						break;
-					case SDLK_b:
-						waiting = false;
-						ret = 8;
-						break;
-					case SDLK_t:
-						waiting = false;
-						ret = 9;
-						break;
-					case SDLK_i:
-						waiting = false;
-						ret = 10;
-						break;
-					default:
-						break;
-				}
-			}
-		}
-		SDL_Flip(screen);
-		if (fps.get_ticks() < 1000 / framerate)
-		{
-			SDL_Delay((1000 / framerate) - fps.get_ticks());
-		}
-	} // waiting loop
-	return ret;
-}
-
-// 0: quit
-// 1: atk
-// 2: matk
-// 4-13: 0-9, that is, take ret and subtract 4
-int wait_battle()
-{
-	bool waiting = true;
-	int ret = 0;
-	SDL_Event e;
-	Timer fps;
-	while (waiting)
-	{
-		fps.start();
-		while(SDL_PollEvent(&e));
-		{
-			if (e.type == SDL_QUIT or e.key.keysym.sym == SDLK_ESCAPE)
-			{
-				waiting = false;
-				ret = 0;
-			}
-			if (e.type == SDL_KEYDOWN)
-			{
-				if (e.key.keysym.sym >= 48 and e.key.keysym.sym <= 57)
-				{
-					waiting = false;
-					ret = e.key.keysym.sym - 48 + 4;
-					break;
-				}
-				switch (e.key.keysym.sym)
-				{
-					case SDLK_a:
-						waiting = false;
-						ret = 1;
-						break;
-					case SDLK_m:
-						waiting = false;
-						ret = 2;
-						break;
-					case SDLK_RETURN:
-						waiting = false;
-						ret = 3;
-						break;
-					default:
-						break;
-				}
-			}
-		}
-		SDL_Flip(screen);
-		if (fps.get_ticks() < 1000 / framerate)
-		{
-			SDL_Delay((1000 / framerate) - fps.get_ticks());
-		}
-	} // waiting loop
-	return ret;
-}
-
-
 void init(World* w)
 {
 	// start all sdl stuff
@@ -476,7 +334,6 @@ void init(World* w)
 	}
 	
 	player_surface = TTF_RenderText_Blended(fonts[i], "D", RED);
-
 }
 
 void clean_up()

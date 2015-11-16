@@ -1,32 +1,26 @@
 #include <string>
+#include <vector>
 
 #include "Building.h"
 #include "Dwarf.h"
+#include "Modification.h"
 
 Tavern::Tavern()
-: cost(15)
 {
 	name = "Tavern";
 	capacity = 10;
-}
 
-void Tavern::drink(Dwarf* player)
-{
-	player->gold -= cost;
-	player->thirst = 0;
+	Modification_Base* drink = new Drink();
+	modifications.push_back(drink);
 }
 
 Inn::Inn()
-: cost(40)
 {
 	name = "Inn";
 	capacity = 7;
-}
 
-void Inn::sleep(Dwarf* player)
-{
-	player->gold -= cost;
-	player->sleepiness = 0;
+	Modification_Base* sleep = new Sleep();
+	modifications.push_back(sleep);
 }
 
 Marketplace::Marketplace()

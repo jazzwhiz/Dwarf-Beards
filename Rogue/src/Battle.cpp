@@ -7,6 +7,7 @@
 #include "Monster.h"
 #include "Dwarf.h"
 #include "Draw.h"
+#include "Keyboard.h"
 #include "World.h"
 #include "Location.h"
 
@@ -92,7 +93,7 @@ int dwarf_battle(World* w)
 		draw::battle(w, attack_style, attack_target, readout);
 
 		// -1 - not selected yet, 0 - regular, 1 - magic
-		attack = draw::wait_battle(); 
+		attack = keyboard::battle();
 
 		// quit
 		if (attack == 0)
@@ -175,8 +176,6 @@ int dwarf_battle(World* w)
 	// todo: level up?
 
 	draw::battle(w, attack_style, attack_target, readout);
-	return draw::wait_static() ? 2 : 0;
-
-
+	return keyboard::simple();
 }
 

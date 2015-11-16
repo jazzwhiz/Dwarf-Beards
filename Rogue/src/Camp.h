@@ -15,7 +15,7 @@ class Camp_Base
 		Camp_Base(int index);
 
 		int index;
-		std::vector<Building_Base> buildings;
+		std::vector<Building_Base*> buildings;
 		std::string name;
 
 		SDL_Surface* to_surface();

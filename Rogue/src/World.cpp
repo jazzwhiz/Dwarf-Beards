@@ -6,11 +6,13 @@
 #include "World.h"
 #include "Dwarf.h"
 #include "Draw.h"
+#include "Keyboard.h"
 #include "Monster.h"
 #include "Earth.h"
 #include "Location.h"
 #include "Camp.h"
 #include "Battle.h"
+#include "Modification.h"
 
 #include "rng.h"
 
@@ -21,7 +23,7 @@ World::World()
 	data_dir = "../data/";
 	draw::init(this);
 
-	if (not draw::title(this))
+	if (draw::title(this) == 0)
 		return;
 
 	turn = 1;
@@ -74,19 +76,17 @@ void World::run()
 				status = 2; // go to main screen
 				break;
 			case 7: // wait
-				wait();
+				wait_turn();
 				status = 2;
 				break;
 			case 8: // battle
 				status = dwarf_battle(this);
 				break;
 			case 9: // tavern
-				enter_building("Tavern");
-				status = 2;
+				status = enter_building("Tavern");
 				break;
 			case 10: // inn
-				enter_building("Inn");
-				status = 2;
+				status = enter_building("Inn");
 				break;
 			default:
 				break;
@@ -121,7 +121,7 @@ void World::move(int direction)
 	// if asleep, wait instead of move
 	if (player.sleepiness >= 1)
 	{
-		wait();
+		wait_turn();
 		return;
 	}
 
@@ -150,25 +150,33 @@ void World::move(int direction)
 	update();
 }
 
-void World::wait()
+void World::wait_turn()
 {
 	player.sleepiness -= 0.05;
 	player.sleepiness = std::max(player.sleepiness, 0.);
 	update();
 }
 
-void World::enter_building(std::string building_name)
+int World::enter_building(std::string building_name)
 {
 	for (unsigned i = 0; i < earth->locations[location[0]][location[1]].camp.buildings.size(); i++)
 	{
-		if (building_name == earth->locations[location[0]][location[1]].camp.buildings[i].name)
+		if (building_name == earth->locations[location[0]][location[1]].camp.buildings[i]->name)
 		{
-			std::cout << building_name << std::endl;
-			// todo actually enter building
-
-			return;
+			draw::inside_building(this, earth->locations[location[0]][location[1]].camp.buildings[i]);
+			int ret = keyboard::building(*earth->locations[location[0]][location[1]].camp.buildings[i]);
+			if (ret > 2)
+			{
+				earth->locations[location[0]][location[1]].camp.buildings[i]->modifications[ret - 2]->modify(&player);
+				ret = 2; // go to main
+			}
+			if (ret == 1)
+				ret = 2;
+			return ret;
+			// todo actually buy stuff
 		}
 	}
+	return 2;
 }
 
 void World::update()

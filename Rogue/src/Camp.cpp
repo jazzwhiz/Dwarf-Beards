@@ -31,16 +31,16 @@ Camp_Base::Camp_Base(int index)
 Camp::Camp()
 : Camp_Base(1)
 {
-	buildings.push_back(Tavern());
-	buildings.push_back(Inn());
+	buildings.push_back(new Tavern());
+	buildings.push_back(new Inn());
 }
 
 Town::Town()
 : Camp_Base(2)
 {
-	buildings.push_back(Tavern());
-	buildings.push_back(Inn());
-	buildings.push_back(Marketplace());
+	buildings.push_back(new Tavern());
+	buildings.push_back(new Inn());
+	buildings.push_back(new Marketplace());
 }
 
 void _camp_init(Camp_Base cb)
