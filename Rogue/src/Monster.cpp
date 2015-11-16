@@ -129,18 +129,24 @@ void read_monster(World* w, std::string name)
 
 void dead_monster_data()
 {
-	std::cout << "Dead Monsters" << std::endl;
+	std::cout << "Writing dmd to file..." << std::endl;
+	std::ofstream dmd("logs/dead_monster_data.txt");
+
+	dmd << "---------------" << std::endl;
+	dmd << " Dead Monsters" << std::endl;
+	dmd << "---------------" << std::endl;
 	int total;
 	for (uint i = 0; i < Monster_Bases.size(); i++)
 	{
 		total = 0;
-		std::cout << "  " << Monster_Bases[i].name << std::endl;
+		dmd << Monster_Bases[i].name << std::endl;
 		for (uint j = 0; j < Monster_Bases[i].deaths.size(); j++)
 		{
-			std::cout << "    " << j << " " << Monster_Bases[i].deaths[j] << std::endl;
+			dmd << "  " << j << " " << Monster_Bases[i].deaths[j] << std::endl;
 			total += Monster_Bases[i].deaths[j];
 		}
-		std::cout << "    " << total << std::endl;
+		dmd << "  Total: " << total << std::endl;
 	}
+	dmd.close();
 }
 
