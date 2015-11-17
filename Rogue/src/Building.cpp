@@ -17,7 +17,7 @@ Tavern::Tavern()
 Inn::Inn()
 {
 	name = "Inn";
-	capacity = 5;
+	capacity = 7;
 
 	Modification_Base* sleep = new Sleep();
 	modifications.push_back(sleep);

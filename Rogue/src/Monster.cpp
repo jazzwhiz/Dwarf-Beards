@@ -129,7 +129,7 @@ void read_monster(World* w, std::string name)
 
 void dead_monster_data()
 {
-	std::cout << "Writing dmd to file..." << std::endl;
+	std::cout << "Writing dead monster data to file..." << std::endl;
 	std::ofstream dmd("logs/dead_monster_data.txt");
 
 	dmd << "---------------" << std::endl;
