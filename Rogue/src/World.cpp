@@ -74,19 +74,26 @@ void World::run()
 			case 6: // down
 				move(status);
 				status = 2; // go to main screen
+				turn++;
 				break;
 			case 7: // wait
 				wait_turn();
 				status = 2;
+				turn++;
 				break;
 			case 8: // battle
 				status = dwarf_battle(this);
+				turn++;
 				break;
 			case 9: // tavern
 				status = enter_building("Tavern");
 				break;
 			case 10: // inn
 				status = enter_building("Inn");
+				break;
+			case 11: // help
+				draw::help();
+				status = 2;
 				break;
 			default:
 				break;

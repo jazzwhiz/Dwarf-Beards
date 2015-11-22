@@ -60,6 +60,7 @@ int simple()
 // 8: battle
 // 9: tavern
 // 10: inn
+// 11: help
 int earth()
 {
 	bool waiting = true;
@@ -115,6 +116,10 @@ int earth()
 					case SDLK_i:
 						waiting = false;
 						ret = 10;
+						break;
+					case SDLK_SLASH:
+						waiting = false;
+						ret = 11;
 						break;
 					default:
 						break;

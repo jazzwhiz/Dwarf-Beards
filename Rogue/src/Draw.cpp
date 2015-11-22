@@ -185,8 +185,8 @@ int earth(World* w)
 		std::string tmp;
 		tmp = "  " + w->earth->locations[w->location[0]][w->location[1]].monsters[i].name + "(";
 		tmp += std::to_string(w->earth->locations[w->location[0]][w->location[1]].monsters[i].lvl) + ") ";
-		tmp += std::to_string((int)w->earth->locations[w->location[0]][w->location[1]].monsters[i].hp) + "/";
-		tmp += std::to_string(w->earth->locations[w->location[0]][w->location[1]].monsters[i].stats[0]);
+		tmp += std::to_string((int)(100 * w->earth->locations[w->location[0]][w->location[1]].monsters[i].hp / w->earth->locations[w->location[0]][w->location[1]].monsters[i].stats[0]));
+		tmp += "%";
 		text(tmp, 14, LIGHT_GRAY, x + 10, y, 0);
 		y += 18;
 	}
@@ -265,6 +265,20 @@ int inside_building(World* w, Building_Base* building)
 	}
 
 	return -1;
+}
+
+void help()
+{
+	clear_screen();
+	int y = 10;
+	text("Keyboard List", 24, LIGHT_GRAY, screen_size[0] / 2, y, 1);
+	y += 30;
+
+	int x = 20;
+	text("c - Character profile", 16, LIGHT_GRAY, x, y, 0);
+	y += 20;
+
+	keyboard::simple(); // exit on esc or enter
 }
 
 // alignx: 0 - left, 1 - center, 2 - right

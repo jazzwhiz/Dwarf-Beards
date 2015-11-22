@@ -33,6 +33,8 @@ int earth(World* w);
 void battle(World* w, int attack_style, int attack_target, std::vector<std::string> readout); // subset of dwarf_battle
 // buildings
 int inside_building(World* w, Building_Base* building);
+// help screen
+void help();
 
 // text and surfaces
 int text(const std::string msg, int size, SDL_Color color, int x, int y, int alignx); // returns the width
