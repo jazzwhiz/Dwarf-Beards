@@ -211,8 +211,9 @@ int building(Building_Base building)
 			{
 				if (e.key.keysym.sym >= 48 and e.key.keysym.sym <= 57)
 				{
-					waiting = false;
-					ret = e.key.keysym.sym - 48 + 2;
+					ret = e.key.keysym.sym - 48 + 3;
+					if (ret - 3 < (int)building.modifications.size())
+						waiting = false;
 					break;
 				}
 				switch (e.key.keysym.sym)

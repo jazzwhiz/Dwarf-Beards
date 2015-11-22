@@ -7,6 +7,8 @@
 #include "Location.h"
 #include "Camp.h"
 
+#include "Draw.h"
+
 #include "Progress.h"
 #include "rng.h"
 
@@ -46,11 +48,13 @@ Earth::Earth(int max_x, int max_y)
 	{
 		update_global();
 		pbar.update((double)i / history_size);
+		draw::progress_bar((double)i / history_size, draw::screen_size[0] / 2, 450, 20, 1);
 	}
 	for (int i = 0; i < history_size; i++) // how much initial history
 	{
 		update_local();
 		pbar.update((double)i / history_size);
+		draw::progress_bar((double)i / history_size, draw::screen_size[0] / 2, 450, 20, 1);
 	}
 	
 }

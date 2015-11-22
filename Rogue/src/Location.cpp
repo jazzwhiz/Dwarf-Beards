@@ -64,7 +64,7 @@ void Location::update()
 
 	// heal monsters
 	for (uint i = 0; i < monsters.size(); i++)
-		monsters[i].heal((10 - evil) / 20.);
+		monsters[i].heal((10 - evil) / 20.); // 0 evil = 0.5, 10 evil = 0
 
 	// todo: grow trees, plants, update weather
 }

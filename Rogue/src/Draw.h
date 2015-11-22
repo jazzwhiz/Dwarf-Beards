@@ -16,6 +16,7 @@ namespace draw
 {
 // screen
 extern const int framerate;
+extern const int screen_size[2];
 extern SDL_Surface* screen;
 
 // colors
@@ -31,10 +32,11 @@ int title(World* w);
 int dwarf_profile(World* w);
 int earth(World* w);
 void battle(World* w, int attack_style, int attack_target, std::vector<std::string> readout); // subset of dwarf_battle
-// buildings
-int inside_building(World* w, Building_Base* building);
-// help screen
-void help();
+void help(); // help screen 
+int inside_building(World* w, Building_Base* building); // buildings
+
+// subsets
+void progress_bar(double progress, int x, int y, int width, int alignx); // progress in [0,1]
 
 // text and surfaces
 int text(const std::string msg, int size, SDL_Color color, int x, int y, int alignx); // returns the width

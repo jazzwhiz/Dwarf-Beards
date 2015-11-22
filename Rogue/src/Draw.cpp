@@ -277,9 +277,31 @@ void help()
 	int x = 20;
 	text("c - Character profile", 16, LIGHT_GRAY, x, y, 0);
 	y += 20;
+	text("t - Enter tavern", 16, LIGHT_GRAY, x, y, 0);
+	y += 20;
+	text("i - Enter inn", 16, LIGHT_GRAY, x, y, 0);
+	y += 20;
 
 	keyboard::simple(); // exit on esc or enter
 }
+
+void progress_bar(double progress, int x, int y, int width, int alignx)
+{
+/*
+	std::string tmp = "[";
+	for (int i = 0; i < width; i++)
+	{
+		if (i < progress * width)
+			tmp += "=";
+		else
+			tmp += "-";
+	}
+	tmp += "]";
+	text(tmp, 16, LIGHT_GRAY, x, y, alignx);
+	SDL_Flip(screen);
+*/
+}
+
 
 // alignx: 0 - left, 1 - center, 2 - right
 int text(const std::string msg, int size, SDL_Color color, int x, int y, int alignx)

@@ -174,7 +174,7 @@ int World::enter_building(std::string building_name)
 			int ret = keyboard::building(*earth->locations[location[0]][location[1]].camp.buildings[i]);
 			if (ret > 2)
 			{
-				earth->locations[location[0]][location[1]].camp.buildings[i]->modifications[ret - 2]->modify(&player);
+				earth->locations[location[0]][location[1]].camp.buildings[i]->modifications[ret - 3]->modify(&player);
 				ret = 2; // go to main
 			}
 			if (ret == 1)
