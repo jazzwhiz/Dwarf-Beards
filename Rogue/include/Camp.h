@@ -6,7 +6,7 @@
 
 #include "Building.h"
 
-class SDL_Surface;
+struct SDL_Surface;
 
 class Camp_Base
 {
