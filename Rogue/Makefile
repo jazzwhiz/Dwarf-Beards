@@ -18,10 +18,11 @@ $(Test_Executable): $(Objects) $(Test_Objects)
 	$(CXX) $(filter-out src/obj/dbr.o,$(Objects)) $(Test_Objects) $(SDLFlags) $(Library) -o $@
 
 src/obj/%.o: src/%.cpp
-#include/%.h
+	@mkdir -p $(@D)
 	$(CXX) $(CFlags) $(Includes) $< -o $@
 
 test/obj/%.o: test/%.cpp
+	@mkdir -p $(@D)
 	$(CXX) $(CFlags) $(Includes) -Isrc $< -o $@
 
 #-include $(Objects:.o=.d)
