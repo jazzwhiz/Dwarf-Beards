@@ -1,4 +1,4 @@
-CC=g++
+#CXX=g++
 CFlags=-c -Wall -Werror -O3 -MMD -std=c++0x -pedantic
 SDLFlags=-lSDL -lSDL_ttf# -lSDL_image -lSDL_mixer
 Includes=-I$(HOME)/Dropbox/bin/cpp/include -Iinclude
@@ -13,17 +13,17 @@ Test_Executable=dbr_test
 all: $(Sources) $(Executable) $(Test_Executable)
 
 $(Executable): $(Objects)
-	$(CC) $(Objects) $(SDLFlags) $(Library) -lmine -o $@
+	$(CXX) $(Objects) $(SDLFlags) $(Library) -lmine -o $@
 
 $(Test_Executable): $(Objects) $(Test_Objects)
-	$(CC) $(filter-out src/obj/dbr.o,$(Objects)) $(Test_Objects) $(SDLFlags) $(Library) -lmine -o $@
+	$(CXX) $(filter-out src/obj/dbr.o,$(Objects)) $(Test_Objects) $(SDLFlags) $(Library) -lmine -o $@
 
 src/obj/%.o: src/%.cpp
 #include/%.h
-	$(CC) $(CFlags) $(Includes) $< -o $@
+	$(CXX) $(CFlags) $(Includes) $< -o $@
 
 test/obj/%.o: test/%.cpp
-	$(CC) $(CFlags) $(Includes) -Isrc $< -o $@
+	$(CXX) $(CFlags) $(Includes) -Isrc $< -o $@
 
 #-include $(Objects:.o=.d)
 #-include $(Test_Objects:.o=.d)

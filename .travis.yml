@@ -14,7 +14,7 @@ compiler:
 
 install:
   - sudo apt-get update
-  - sudo apt-get install libsdl1.2-dev
+  - sudo apt-get install libsdl1.2-dev libsdl-ttf2.0-dev
 
 script:
   - cd Rogue
