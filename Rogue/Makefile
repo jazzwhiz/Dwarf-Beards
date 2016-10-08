@@ -1,4 +1,3 @@
-#CXX=g++
 CFlags=-c -Wall -Werror -O3 -MMD -std=c++0x -pedantic
 SDLFlags=-lSDL -lSDL_ttf# -lSDL_image -lSDL_mixer
 Includes=-Iinclude

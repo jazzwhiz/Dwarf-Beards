@@ -30,15 +30,15 @@ SDL_Surface* player_surface; // D
 // Grayscale
 const SDL_Color WHITE = {255, 255, 255};
 const SDL_Color LIGHT_GRAY = {150, 150, 150};
-const SDL_Color GRAY = {90, 90, 90};
+//const SDL_Color GRAY = {90, 90, 90};
 const SDL_Color DARK_GRAY = {60, 60, 60};
-const SDL_Color BLACK = {0, 0, 0};
+//const SDL_Color BLACK = {0, 0, 0};
 // Others
 const SDL_Color BROWN = {139, 69, 19};
-const SDL_Color GOLD = {255, 215, 0};
+//const SDL_Color GOLD = {255, 215, 0};
 const SDL_Color RED = {255, 0, 0};
 const SDL_Color BLUE = {0, 0, 255};
-const SDL_Color DARK_BLUE = {0, 0, 100};
+//const SDL_Color DARK_BLUE = {0, 0, 100};
 const SDL_Color YELLOW = {255, 255, 0};
 
 // hp, atk, matk, def, mdef
