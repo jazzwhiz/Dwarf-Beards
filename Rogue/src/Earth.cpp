@@ -83,6 +83,7 @@ void Earth::update_global()
 	// todo: in world gen, update evil first, then place monsters
 
 	int evil_sum, n_neighbors;
+	double temperature_sum, precipitation_sum;
 	double difference;
 
 	for (int x = 0; x < earth_size[0]; x++)
@@ -105,32 +106,53 @@ void Earth::update_global()
 				locations[x][y].evil = std::min(locations[x][y].evil, 10);
 			}
 
+			// check neighbors
 			evil_sum = 0;
+			temperature_sum = 0;
+			precipitation_sum = 0;
 			n_neighbors = 0;
 			if (x > 0)
 			{
 				evil_sum += locations[x - 1][y].evil;
+				temperature_sum += locations[x - 1][y].weather.temperature;
+				precipitation_sum += locations[x - 1][y].weather.temperature;
 				n_neighbors++;
 			}
 			if (x < earth_size[0] - 1)
 			{
 				evil_sum += locations[x + 1][y].evil;
+				temperature_sum += locations[x + 1][y].weather.temperature;
+				precipitation_sum += locations[x + 1][y].weather.temperature;
 				n_neighbors++;
 			}
 			if (y > 0)
 			{
 				evil_sum += locations[x][y - 1].evil;
+				temperature_sum += locations[x][y - 1].weather.temperature;
+				precipitation_sum += locations[x][y - 1].weather.temperature;
 				n_neighbors++;
 			}
 			if (y < earth_size[1] - 1)
 			{
 				evil_sum += locations[x][y + 1].evil;
+				temperature_sum += locations[x][y + 1].weather.temperature;
+				precipitation_sum += locations[x][y + 1].weather.temperature;
 				n_neighbors++;
 			}
 
 			difference = (double)evil_sum / n_neighbors - locations[x][y].evil;
 			if (rng.rand(10) < std::abs(difference))
 				locations[x][y].evil += (difference > 0 ? 1 : -1);
+
+			difference = temperature_sum / n_neighbors - locations[x][y].weather.temperature;
+			if (rng.rand(5) < std::abs(difference))
+				locations[x][y].weather.temperature += (difference > 0 ? 1 : -1) * rng.rand(3);
+
+			difference = precipitation_sum / n_neighbors - locations[x][y].weather.precipitation;
+			if (rng.rand(4) < std::abs(difference))
+				locations[x][y].weather.precipitation += (difference > 0 ? 1 : -1);
+
+			// TODO weather fronts
 
 		} // y
 	} // x

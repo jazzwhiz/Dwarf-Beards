@@ -11,7 +11,6 @@ class Weather
 		std::string precip();
 		void update();
 
-	private:
 		double temperature; // Faranheit because duh
 		double precipitation; // 0 - 10
 };

@@ -40,9 +40,9 @@ std::string Weather::precip()
 {
 	std::string r;
 
-	if (precipitation == 0)
+	if (precipitation < 3)
 		r = "clear";
-	else if (precipitation < 3)
+	else if (precipitation < 6)
 	{
 		if (temperature > 36)
 			r = "drizzly";
@@ -74,7 +74,8 @@ std::string Weather::precip()
 void Weather::update()
 {
 	// change temperature
-	temperature += rng.rand(-3, 3);
+	if (rng.rand() < 0.05)
+		temperature += rng.rand(-2, 2);
 
 	// check temperature edge cases
 	if (temperature < -10)
@@ -83,7 +84,7 @@ void Weather::update()
 		temperature -= rng.rand(3);
 
 	// change precipitation
-	if (rng.rand() < 0.4) // stay the same most of the time
+	if (rng.rand() < 0.3) // stay the same most of the time
 		precipitation += rng.rand(-1, 1);
 	if (rng.rand() < 0.02)
 		precipitation += rng.rand(-6, 6); // occasinally change a lot
