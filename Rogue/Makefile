@@ -18,7 +18,7 @@ $(Executable): $(Objects)
 $(Test_Executable): $(Objects) $(Test_Objects)
 	$(CC) $(filter-out src/obj/dbr.o,$(Objects)) $(Test_Objects) $(SDLFlags) $(Library) -lmine -o $@
 
-src/obj/%.o: src/%.cpp
+src/obj/%.o: src/%.cpp include/%.h
 	$(CC) $(CFlags) $(Includes) $< -o $@
 
 test/obj/%.o: test/%.cpp

@@ -13,6 +13,7 @@
 #include "Draw.h"
 #include "Monster.h"
 #include "Battle.h"
+#include "Weather.h"
 
 #include "rng.h"
 
@@ -66,7 +67,11 @@ void Location::update()
 	for (uint i = 0; i < monsters.size(); i++)
 		monsters[i].heal((10 - evil) / 20.); // 0 evil = 0.5, 10 evil = 0
 
-	// todo: grow trees, plants, update weather
+	// update weather locally
+	weather.update();
+	// TODO: update weather based on neighbors and include weather fronts
+
+	// TODO: grow trees, plants
 }
 
 SDL_Surface* Location::to_surface()

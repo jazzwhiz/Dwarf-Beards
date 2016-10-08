@@ -19,7 +19,7 @@
 World::World()
 {
 	version = "0.04";
-	copyright = "(c) 2015 Peter Denton";
+	copyright = "(c) 2015-2016 Peter Denton";
 	data_dir = "../data/";
 	draw::init(this);
 
@@ -28,7 +28,7 @@ World::World()
 
 	turn = 1;
 
-//	rng.seed(1888);
+	rng.seed(1888);
 	init_names();
 	player = Dwarf(random_name());
 	std::cout << "Welcome, " << player.name << std::endl;

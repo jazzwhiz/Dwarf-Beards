@@ -8,6 +8,7 @@
 
 #include "Monster.h"
 #include "Camp.h"
+#include "Weather.h"
 
 class World;
 
@@ -32,6 +33,7 @@ class Location
 		int diff, index, width, evil;
 		std::vector<Monster> monsters;
 		Camp_Base camp;
+		Weather weather;
 
 		const std::string evil_str(); // getter, in text form
 		void update();

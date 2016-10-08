@@ -36,7 +36,8 @@ void Monster_Battle::turn()
 	if (n_monsters < 2)
 		return;
 
-	int target, order[n_monsters];
+	int target;
+	int *order = new int[n_monsters];
 	for (int i = 0; i < n_monsters; i++)
 		order[i] = i;
 	rng.shuffle(order, n_monsters);
@@ -47,6 +48,7 @@ void Monster_Battle::turn()
 		target = (rng.rand_int(1, n_monsters - 1) + order[i]) % n_monsters;
 		this->fight(order[i], target);
 	} // i, attackers
+	delete[] order;
 }
 
 void Monster_Battle::fight(int attacker, int defender)
@@ -105,7 +107,7 @@ int dwarf_battle(World* w)
 			attack_style = attack - 1;
 		if (attack == 3 and attack_style >= 0 and attack_target >= 0)
 		{
-			int order[n_monsters + 1];
+			int *order = new int[n_monsters + 1];
 			readout.clear();
 			for (int i = 0; i < n_monsters + 1; i++)
 				order[i] = i;
@@ -158,6 +160,7 @@ int dwarf_battle(World* w)
 
 			attack_style = -1;
 			attack_target = -1;
+			delete[] order;
 		}
 		if (attack >= 4)
 		{

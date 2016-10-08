@@ -157,6 +157,12 @@ int earth(World* w)
 	y += 18;
 
 	text(w->earth->locations[w->location[0]][w->location[1]].evil_str(), 14, LIGHT_GRAY, x + 10, y, 0);
+	y += 18;
+
+	text("It's " + w->earth->locations[w->location[0]][w->location[1]].weather.temp(), 14, LIGHT_GRAY, x + 10, y, 0);
+	y += 18;
+
+	text("and " + w->earth->locations[w->location[0]][w->location[1]].weather.precip(), 14, LIGHT_GRAY, x + 20, y, 0);
 	y += 25;
 
 	// buildings
