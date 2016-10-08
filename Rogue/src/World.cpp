@@ -52,48 +52,48 @@ World::World()
 
 void World::run()
 {
-	int status = 1;
+	screen_status = 1;
 	bool playing = true;
 
 	while (playing)
 	{
-		switch (status)
+		switch (screen_status)
 		{
 			case 0: // quit
 				playing = false;
 				break;
 			case 1: // dwarf profile
-				status = draw::dwarf_profile(this);
+				screen_status = draw::dwarf_profile(this);
 				break;
 			case 2: // main screen
-				status = draw::earth(this);
+				screen_status = draw::earth(this);
 				break;
 			case 3: // left
 			case 4: // right
 			case 5: // up
 			case 6: // down
-				move(status);
-				status = 2; // go to main screen
+				move(screen_status);
+				screen_status = 2; // go to main screen
 				turn++;
 				break;
 			case 7: // wait
 				wait_turn();
-				status = 2;
+				screen_status = 2;
 				turn++;
 				break;
 			case 8: // battle
-				status = dwarf_battle(this);
+				screen_status = dwarf_battle(this);
 				turn++;
 				break;
 			case 9: // tavern
-				status = enter_building("Tavern");
+				screen_status = enter_building("Tavern");
 				break;
 			case 10: // inn
-				status = enter_building("Inn");
+				screen_status = enter_building("Inn");
 				break;
 			case 11: // help
 				draw::help();
-				status = 2;
+				screen_status = 2;
 				break;
 			default:
 				break;
@@ -105,6 +105,11 @@ void World::run()
 
 void World::move(int direction)
 {
+	// 3-6 -> l,r,u,d
+
+	// send to world view after
+	screen_status = 2;
+
 	// check if going off map
 	bool off_map = false;
 	switch (direction)
@@ -151,10 +156,13 @@ void World::move(int direction)
 
 	earth->locations[location[0]][location[1]].fog = false;
 
-	// update sleepiness, and off screen monsters
+	// update sleepiness
 	player.sleepiness += earth->locations[location[0]][location[1]].diff / 100.;
 	player.sleepiness = std::min(player.sleepiness, 1.);
+	// update monsters
 	update();
+	// increment turn
+	turn++;
 }
 
 void World::wait_turn()
@@ -240,7 +248,7 @@ void World::quit()
 	std::cout << "Quitting..." << std::endl;
 
 	// output data
-//	earth->live_monster_data();
+	earth->live_monster_data();
 	dead_monster_data();
 
 	delete earth;

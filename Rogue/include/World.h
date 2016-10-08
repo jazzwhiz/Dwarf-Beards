@@ -19,6 +19,14 @@ class World
 		int earth_size[2];
 		Earth* earth;
 
+		int screen_status;
+		// -1:	not yet defined
+		// 0:	title screen
+		// 1:	character screen
+		// 2:	world view
+		// 3:	battle view
+		// 4:	building view
+
 		std::string random_name();
 		std::string data_dir, version, copyright;
 

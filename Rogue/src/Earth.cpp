@@ -1,5 +1,6 @@
 #include <vector>
 #include <algorithm>
+#include <fstream>
 
 #include <iostream>
 
@@ -164,18 +165,24 @@ void Earth::live_monster_data()
 	} // x
 
 	// print data
-	std::cout << "Live monsters" << std::endl;
+	std::cout << "Writing live monster data to file..." << std::endl;
+	std::ofstream lmd("logs/live_monster_data.txt");
+
+	lmd << "---------------" << std::endl;
+	lmd << " Live Monsters" << std::endl;
+	lmd << "---------------" << std::endl;
+
 	int total;
 	for (uint i = 0; i < Monster_Bases.size(); i++)
 	{
 		total = 0;
-		std::cout << "  " << Monster_Bases[i].name << std::endl;
+		lmd << "  " << Monster_Bases[i].name << std::endl;
 		for (uint j = 0; j < live_counts[i].size(); j++)
 		{
-			std::cout << "    " << j << " " << live_counts[i][j] << std::endl;
+			lmd << "    " << j << " " << live_counts[i][j] << std::endl;
 			total += live_counts[i][j];
 		}
-		std::cout << "    " << total << std::endl;
+		lmd << "    " << total << std::endl;
 	}
 }
 

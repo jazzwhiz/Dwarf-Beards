@@ -167,7 +167,8 @@ int earth(World* w)
 		y += 22;
 		for (int i = 0; i < n_buildings; i++)
 		{
-			text(w->earth->locations[w->location[0]][w->location[1]].camp.buildings[i]->name, 14, LIGHT_GRAY, x + 10, y, 0);
+			text(std::to_string(i) + " - " + 
+				w->earth->locations[w->location[0]][w->location[1]].camp.buildings[i]->name, 14, LIGHT_GRAY, x + 10, y, 0);
 			y += 18;
 		}
 	}

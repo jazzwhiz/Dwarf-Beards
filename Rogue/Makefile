@@ -1,7 +1,7 @@
 CC=g++
-CFlags=-c -Wall -O3 -MMD -std=c++0x
+CFlags=-c -Wall -O3 -MMD -std=c++0x -pedantic
 SDLFlags=-lSDL -lSDL_ttf# -lSDL_image -lSDL_mixer
-Includes=-I$(HOME)/Dropbox/bin/cpp/include
+Includes=-I$(HOME)/Dropbox/bin/cpp/include -Iinclude
 Library=-L$(HOME)/Dropbox/bin/cpp/lib
 Sources=$(wildcard src/*.cpp)
 Test_Sources=$(wildcard test/*.cpp)
