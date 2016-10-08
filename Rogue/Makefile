@@ -1,5 +1,5 @@
 CC=g++
-CFlags=-c -Wall -O3 -MMD -std=c++0x -pedantic
+CFlags=-c -Wall -Werror -O3 -MMD -std=c++0x -pedantic
 SDLFlags=-lSDL -lSDL_ttf# -lSDL_image -lSDL_mixer
 Includes=-I$(HOME)/Dropbox/bin/cpp/include -Iinclude
 Library=-L$(HOME)/Dropbox/bin/cpp/lib
@@ -18,7 +18,8 @@ $(Executable): $(Objects)
 $(Test_Executable): $(Objects) $(Test_Objects)
 	$(CC) $(filter-out src/obj/dbr.o,$(Objects)) $(Test_Objects) $(SDLFlags) $(Library) -lmine -o $@
 
-src/obj/%.o: src/%.cpp include/%.h
+src/obj/%.o: src/%.cpp
+#include/%.h
 	$(CC) $(CFlags) $(Includes) $< -o $@
 
 test/obj/%.o: test/%.cpp

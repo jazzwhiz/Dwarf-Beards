@@ -20,7 +20,7 @@ int simple()
 	while (waiting)
 	{
 		fps.start();
-		while(SDL_PollEvent(&e));
+		while (SDL_PollEvent(&e))
 		{
 			if (e.type == SDL_QUIT)
 			{
@@ -70,7 +70,7 @@ int earth()
 	while (waiting)
 	{
 		fps.start();
-		while(SDL_PollEvent(&e));
+		while (SDL_PollEvent(&e))
 		{
 			if (e.type == SDL_QUIT)
 			{
@@ -148,7 +148,7 @@ int battle()
 	while (waiting)
 	{
 		fps.start();
-		while(SDL_PollEvent(&e));
+		while (SDL_PollEvent(&e))
 		{
 			if (e.type == SDL_QUIT or e.key.keysym.sym == SDLK_ESCAPE)
 			{
@@ -200,7 +200,7 @@ int building(Building_Base building)
 	while (waiting)
 	{
 		fps.start();
-		while(SDL_PollEvent(&e));
+		while (SDL_PollEvent(&e))
 		{
 			if (e.type == SDL_QUIT)
 			{
