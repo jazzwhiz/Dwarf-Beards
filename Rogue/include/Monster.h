@@ -25,7 +25,7 @@ class Monster : public Being
 		Monster(int lvl);
 		~Monster();
 		std::string name;
-		int lvl, exp, index,base_stats[15];//, stats[6]; // maxhp, atk, matk, def, mdef, exp (awarded)
+		int lvl, exp, index, base_stats[15];//, stats[6]; // maxhp, atk, matk, def, mdef, exp (awarded)
 
 		void gain_exp(int _exp);
 		void heal(double _hp);

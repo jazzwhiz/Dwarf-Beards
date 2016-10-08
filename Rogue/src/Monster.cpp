@@ -76,9 +76,9 @@ Monster::~Monster()
 void Monster::gain_exp(int _exp)
 {
 	exp += _exp;
-	while (exp >= 50 * (lvl + 1) * (lvl + 1))
+	while (exp >= 5 * (lvl + 1))// * (lvl + 1))
 	{
-		exp -= 50 * (lvl + 1) * (lvl + 1);
+		exp -= 5 * (lvl + 1);// * (lvl + 1);
 		lvl++;
 		for (int i = 0; i < 6; i++)
 			stats[i] += base_stats[i * 2 + 1];

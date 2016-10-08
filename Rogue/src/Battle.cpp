@@ -91,7 +91,6 @@ int dwarf_battle(World* w)
 
 	while (battling and n_monsters > 0)
 	{
-		turn_number++;
 		draw::battle(w, attack_style, attack_target, readout);
 
 		// -1 - not selected yet, 0 - regular, 1 - magic
@@ -107,12 +106,14 @@ int dwarf_battle(World* w)
 			attack_style = attack - 1;
 		if (attack == 3 and attack_style >= 0 and attack_target >= 0)
 		{
+			turn_number++;
 			int *order = new int[n_monsters + 1];
 			readout.clear();
 			for (int i = 0; i < n_monsters + 1; i++)
 				order[i] = i;
 			rng.shuffle(order, n_monsters + 1);
 
+// TODO fix indexing in the following loop after death
 			for (int i = 0; i < n_monsters + 1; i++)
 			{
 				if (order[i] == n_monsters) // dwarf is attacking
@@ -122,7 +123,10 @@ int dwarf_battle(World* w)
 					if (damage == 0)
 						tmp += " misses ";
 					else if (damage == -1)
+					{
 						tmp += " kills ";
+						attack_target = -1; // you kill your target
+					}
 					else
 						tmp += " does " + std::to_string((int)damage) + " damage to ";
 					tmp += monsters[attack_target].name + "(" + std::to_string(monsters[attack_target].lvl) + ")";
@@ -138,7 +142,11 @@ int dwarf_battle(World* w)
 					if (damage == 0)
 						tmp += " misses ";
 					else if (damage == -1)
+					{
 						tmp += " kills ";
+						if (target == attack_target)
+							attack_target = -1; // somebody kills your target
+					}
 					else
 						tmp += " does " + std::to_string((int)damage) + " damage to ";
 					if (target == n_monsters) // if targeting player
@@ -150,16 +158,19 @@ int dwarf_battle(World* w)
 				tmp.clear();
 
 				// erase dead monsters
-				for (unsigned i = 0; i < monsters.size(); i++)
+				for (uint j = 0; j < monsters.size(); j++)
 				{
-					if (monsters[i].hp <= 0)
-						monsters.erase(monsters.begin() + i);
-				}
-				n_monsters = monsters.size();
-			}
+					if (monsters[j].hp <= 0)
+					{
+						monsters.erase(monsters.begin() + j);
+						if (attack_target != -1 and j < (uint)attack_target)
+							attack_target--;
+					}
+				} // j, monsters
+			} // i, monsters
+			n_monsters = monsters.size();
 
-			attack_style = -1;
-			attack_target = -1;
+//			attack_target = -1;
 			delete[] order;
 		}
 		if (attack >= 4)
@@ -170,6 +181,7 @@ int dwarf_battle(World* w)
 		}
 
 	}
+
 
 	w->player.gain_exp(exp);
 	readout.push_back("");

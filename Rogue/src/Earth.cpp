@@ -44,7 +44,7 @@ Earth::Earth(int max_x, int max_y)
 	}
 
 	Progress_Bar pbar;
-	int history_size = 10000;
+	int history_size = 1e3;
 	for (int i = 0; i < history_size; i++) // how much initial history
 	{
 		update_global();

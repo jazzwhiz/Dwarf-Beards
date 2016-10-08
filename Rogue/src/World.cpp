@@ -82,8 +82,13 @@ void World::run()
 				turn++;
 				break;
 			case 8: // battle
-				screen_status = dwarf_battle(this);
-				turn++;
+				if (earth->locations[location[0]][location[1]].monsters.size() > 0) // check to ensure that there are actually monsters
+				{
+					screen_status = dwarf_battle(this);
+					turn++;
+				}
+				else
+					screen_status = 2;
 				break;
 			case 9: // tavern
 				screen_status = enter_building("Tavern");
