@@ -6,7 +6,6 @@ env:
 
 os:
   - linux
-  - osx
 
 compiler:
   - g++

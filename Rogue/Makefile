@@ -1,8 +1,7 @@
 #CXX=g++
 CFlags=-c -Wall -Werror -O3 -MMD -std=c++0x -pedantic
 SDLFlags=-lSDL -lSDL_ttf# -lSDL_image -lSDL_mixer
-Includes=-I$(HOME)/Dropbox/bin/cpp/include -Iinclude
-Library=-L$(HOME)/Dropbox/bin/cpp/lib
+Includes=-Iinclude
 Sources=$(wildcard src/*.cpp)
 Test_Sources=$(wildcard test/*.cpp)
 Objects=$(addprefix src/obj/,$(notdir $(Sources:.cpp=.o)))
@@ -13,10 +12,10 @@ Test_Executable=dbr_test
 all: $(Sources) $(Executable) $(Test_Executable)
 
 $(Executable): $(Objects)
-	$(CXX) $(Objects) $(SDLFlags) $(Library) -lmine -o $@
+	$(CXX) $(Objects) $(SDLFlags) $(Library) -o $@
 
 $(Test_Executable): $(Objects) $(Test_Objects)
-	$(CXX) $(filter-out src/obj/dbr.o,$(Objects)) $(Test_Objects) $(SDLFlags) $(Library) -lmine -o $@
+	$(CXX) $(filter-out src/obj/dbr.o,$(Objects)) $(Test_Objects) $(SDLFlags) $(Library) -o $@
 
 src/obj/%.o: src/%.cpp
 #include/%.h
